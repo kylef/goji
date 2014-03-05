@@ -1,5 +1,6 @@
 from urlparse import urljoin, urlparse
 from netrc import netrc
+import json
 import requests
 from goji.models import Issue
 
@@ -22,4 +23,12 @@ class JIRAClient(object):
         url = urljoin(self.rest_base_url, 'issue/%s' % issue_key)
         request = requests.get(url, auth=self.auth)
         return Issue.from_json(request.json())
+
+    def comment(self, issue_key, comment):
+        url = urljoin(self.rest_base_url, 'issue/%s/comment' % issue_key)
+        headers = {'content-type': 'application/json'}
+        payload = json.dumps({'body': comment})
+        request = requests.post(url, data=payload, headers=headers,
+                                auth=self.auth)
+        return (request.status_code == 201) or (request.status_code == 200)
 

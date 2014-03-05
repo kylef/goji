@@ -2,6 +2,7 @@ from urlparse import urljoin
 from os import system, environ
 from manager import Manager
 from goji.client import JIRAClient
+from goji.editor import Editor
 
 
 client = None
@@ -41,6 +42,21 @@ def show(issue_key):
             outward_issue = link.outward_issue
             print('  - %s: %s (%s)' % (link.link_type.outward.capitalize(),
                 outward_issue.key, outward_issue.status))
+
+
+@manager.arg('issue_key')
+@manager.command
+def comment(issue_key):
+    editor = Editor("""
+# Leave a comment on {}
+""".format(issue_key))
+    comment = editor.start()
+
+    if client.comment(issue_key, comment):
+        print('Comment created')
+    else:
+        print('Comment failed')
+        print(comment)
 
 
 def main():
