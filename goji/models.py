@@ -22,6 +22,7 @@ class Issue(Model):
         issue = cls(json['key'])
         fields = json['fields']
         issue.summary = fields['summary']
+        issue.description = fields.get('description')
         issue.creator = User.from_json(fields.get('creator'))
         issue.assignee = User.from_json(fields.get('assignee'))
         issue.status = fields['status']['name']

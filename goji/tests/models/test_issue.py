@@ -11,6 +11,7 @@ class IssueTests(unittest.TestCase):
                     'name': 'closed'
                 },
                 'summary': 'Issue Summary',
+                'description': 'An awesome issue description',
                 'creator': {
                     'name': 'kyle',
                     'displayName': 'Kyle Fuller',
@@ -47,6 +48,7 @@ class IssueTests(unittest.TestCase):
 
         self.assertEqual(issue.key, 'GOJI-1')
         self.assertEqual(issue.summary, 'Issue Summary')
+        self.assertEqual(issue.description, 'An awesome issue description')
         self.assertEqual(issue.creator.username, 'kyle')
         self.assertEqual(issue.assignee.username, 'kyle')
         self.assertEqual(issue.status, 'To Do')

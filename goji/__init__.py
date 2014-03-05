@@ -23,6 +23,12 @@ def show(issue_key):
     print('\x1b[01;32m-> {issue.key}\x1b[0m'.format(issue=issue))
     print('  {issue.summary}\n'.format(issue=issue))
 
+    if issue.description:
+        for line in issue.description.splitlines():
+            print('  {}'.format(line))
+
+        print('')
+
     print('  - Status: {issue.status}'.format(issue=issue))
     print('  - Creator: {issue.creator}'.format(issue=issue))
     print('  - Assigned: {issue.assignee}'.format(issue=issue))
