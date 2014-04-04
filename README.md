@@ -35,6 +35,19 @@ Opens an issue in your browser.
 $ goji open GOJI-1
 ```
 
+### assign / unassign
+
+Assigns yourself or another user to an issue.
+
+```bash
+$ goji assign GOJI-1
+You have been assigned to GOJI-1.
+$ goji assign GOJI-1 sam
+sam has been assigned to GOJI-1.
+$ goji unassign GOJI-1
+GOJI-1 has been unassigned.
+```
+
 ## License
 
 goji is released under the BSD license. See [LICENSE](LICENSE).

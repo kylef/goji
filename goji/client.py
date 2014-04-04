@@ -19,6 +19,10 @@ class JIRAClient(object):
             print('== Hostname %s not found in .netrc.' % hostname)
             exit()
 
+    @property
+    def username(self):
+        return self.auth[0]
+
     def get_issue(self, issue_key):
         url = urljoin(self.rest_base_url, 'issue/%s' % issue_key)
         request = requests.get(url, auth=self.auth)
@@ -28,6 +32,13 @@ class JIRAClient(object):
         url = urljoin(self.rest_base_url, 'issue/%s' % issue_key)
         headers = {'content-type': 'application/json'}
         data = json.dumps({'fields': updated_fields})
+        request = requests.put(url, data=data, headers=headers, auth=self.auth)
+        return (request.status_code == 204) or (request.status_code == 200)
+
+    def assign(self, issue_key, name):
+        url = urljoin(self.rest_base_url, 'issue/%s/assignee' % issue_key)
+        headers = {'content-type': 'application/json'}
+        data = json.dumps({'name': name})
         request = requests.put(url, data=data, headers=headers, auth=self.auth)
         return (request.status_code == 204) or (request.status_code == 200)
 

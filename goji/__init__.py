@@ -44,6 +44,27 @@ def show(issue_key):
                 outward_issue.key, outward_issue.status))
 
 
+@manager.arg('issue_key', 'user')
+@manager.command
+def assign(issue_key, user=None):
+    if user is None:
+        user = client.username
+
+    if client.assign(issue_key, user):
+        print('Okay, {} has been assigned to {}.'.format(issue_key, user))
+    else:
+        print('There was a problem assigning {} to {}.'.format(issue_key, user))
+
+
+@manager.arg('issue_key', 'user')
+@manager.command
+def unassign(issue_key):
+    if client.assign(issue_key, None):
+        print('{} has been unassigned.'.format(issue_key))
+    else:
+        print('There was a problem unassigning {}.'.format(issue_key))
+
+
 @manager.arg('issue_key')
 @manager.command
 def comment(issue_key):
