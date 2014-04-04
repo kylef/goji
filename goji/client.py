@@ -24,6 +24,13 @@ class JIRAClient(object):
         request = requests.get(url, auth=self.auth)
         return Issue.from_json(request.json())
 
+    def edit_issue(self, issue_key, updated_fields):
+        url = urljoin(self.rest_base_url, 'issue/%s' % issue_key)
+        headers = {'content-type': 'application/json'}
+        data = json.dumps({'fields': updated_fields})
+        request = requests.put(url, data=data, headers=headers, auth=self.auth)
+        return (request.status_code == 204) or (request.status_code == 200)
+
     def comment(self, issue_key, comment):
         url = urljoin(self.rest_base_url, 'issue/%s/comment' % issue_key)
         headers = {'content-type': 'application/json'}

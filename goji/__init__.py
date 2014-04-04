@@ -59,6 +59,21 @@ def comment(issue_key):
         print(comment)
 
 
+@manager.arg('issue_key')
+@manager.command
+def edit(issue_key):
+    issue = client.get_issue(issue_key)
+    editor = Editor(issue.description)
+    description = editor.start()
+
+    if description.strip() != issue.description.strip():
+        if client.edit_issue(issue_key, {'description': description.strip()}):
+            print('Okay, the description for {} has been updated.'.format(issue_key))
+        else:
+            print('There was an issue saving the new description:')
+            print(description)
+
+
 def main():
     global client
 
