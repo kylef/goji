@@ -20,6 +20,7 @@ def open(issue_key):
 @manager.command
 def show(issue_key):
     issue = client.get_issue(issue_key)
+    url = urljoin(client.base_url, 'browse/%s' % issue_key)
 
     print('\x1b[01;32m-> {issue.key}\x1b[0m'.format(issue=issue))
     print('  {issue.summary}\n'.format(issue=issue))
@@ -33,7 +34,7 @@ def show(issue_key):
     print('  - Status: {issue.status}'.format(issue=issue))
     print('  - Creator: {issue.creator}'.format(issue=issue))
     print('  - Assigned: {issue.assignee}'.format(issue=issue))
-    print('  - URL: https://mentallyfriendly.atlassian.net/browse/%s' % issue.key)
+    print('  - URL: {url}'.format(url=url))
 
     if issue.links:
         print('\n  Related issues:')
