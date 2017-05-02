@@ -7,7 +7,7 @@ setup(
     version='0.1.0',
     url='https://github.com/kylef/goji',
     author='Kyle Fuller',
-    author_email='inbox@kylefuller.co.uk',
+    author_email='kyle@fuller.li',
     packages=('goji',),
     install_requires=('requests', 'Click'),
     entry_points={
