@@ -17,6 +17,7 @@ def cli():
 @click.argument('issue_key')
 @cli.command()
 def open(issue_key):
+    """Open issue in a web browser"""
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
     click.launch(url)
 
@@ -24,6 +25,7 @@ def open(issue_key):
 @click.argument('issue_key')
 @cli.command()
 def show(issue_key):
+    """Print issue contents"""
     issue = client.get_issue(issue_key)
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
 
@@ -54,6 +56,7 @@ def show(issue_key):
 @click.argument('user')
 @cli.command()
 def assign(issue_key, user=None):
+    """Assign an issue to a user"""
     if user is None:
         user = client.username
 
@@ -64,9 +67,9 @@ def assign(issue_key, user=None):
 
 
 @click.argument('issue_key')
-@click.argument('user')
 @cli.command()
 def unassign(issue_key):
+    """Unassign an issue"""
     if client.assign(issue_key, None):
         print('{} has been unassigned.'.format(issue_key))
     else:
@@ -76,6 +79,7 @@ def unassign(issue_key):
 @click.argument('issue_key')
 @cli.command()
 def comment(issue_key):
+    """Comment on an issue"""
     MARKER = '# Leave a comment on {}'.format(issue_key)
     comment = click.edit(MARKER)
 
@@ -89,6 +93,7 @@ def comment(issue_key):
 @click.argument('issue_key')
 @cli.command()
 def edit(issue_key):
+    """Edit issue description"""
     issue = client.get_issue(issue_key)
     description = click.edit(issue.description)
 
