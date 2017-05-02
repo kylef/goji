@@ -1,10 +1,9 @@
 from urlparse import urljoin
-from os import system, environ
+from os import environ
 
 import click
 
 from goji.client import JIRAClient
-from goji.editor import Editor
 
 
 client = None
@@ -19,7 +18,7 @@ def cli():
 @cli.command()
 def open(issue_key):
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
-    system('open %s' % url)
+    click.launch(url)
 
 
 @click.argument('issue_key')
@@ -77,12 +76,10 @@ def unassign(issue_key):
 @click.argument('issue_key')
 @cli.command()
 def comment(issue_key):
-    editor = Editor("""
-# Leave a comment on {}
-""".format(issue_key))
-    comment = editor.start()
+    MARKER = '# Leave a comment on {}'.format(issue_key)
+    comment = click.edit(MARKER)
 
-    if client.comment(issue_key, comment):
+    if comment is not None and client.comment(issue_key, comment):
         print('Comment created')
     else:
         print('Comment failed')
@@ -93,10 +90,9 @@ def comment(issue_key):
 @cli.command()
 def edit(issue_key):
     issue = client.get_issue(issue_key)
-    editor = Editor(issue.description)
-    description = editor.start()
+    description = click.edit(issue.description)
 
-    if description.strip() != issue.description.strip():
+    if description is not None and description.strip() != issue.description.strip():
         if client.edit_issue(issue_key, {'description': description.strip()}):
             print('Okay, the description for {} has been updated.'.format(issue_key))
         else:
