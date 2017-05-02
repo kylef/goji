@@ -15,6 +15,6 @@ setup(
             'goji = goji:main',
         )
     },
-    test_suite='goji.tests',
+    test_suite='tests',
 )
 
