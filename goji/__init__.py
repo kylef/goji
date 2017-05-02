@@ -105,6 +105,16 @@ def edit(issue_key):
             print(description)
 
 
+@click.argument('query')
+@cli.command()
+def search(query):
+    """Search issues using JQL"""
+    issues = client.search(query)
+
+    for issue in issues:
+        print('{issue.key} {issue.summary}'.format(issue=issue))
+
+
 def main():
     global client
 

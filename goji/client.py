@@ -50,3 +50,10 @@ class JIRAClient(object):
                                 auth=self.auth)
         return (request.status_code == 201) or (request.status_code == 200)
 
+    def search(self, query):
+        url = urljoin(self.rest_base_url, 'search')
+        headers = {'content-type': 'application/json'}
+        payload = json.dumps({'jql': query})
+        request = requests.post(url, data=payload, headers=headers,
+                                auth=self.auth)
+        return map(Issue.from_json, request.json()['issues'])
