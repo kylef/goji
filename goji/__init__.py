@@ -1,23 +1,29 @@
 from urlparse import urljoin
 from os import system, environ
-from manager import Manager
+
+import click
+
 from goji.client import JIRAClient
 from goji.editor import Editor
 
 
 client = None
-manager = Manager()
 
 
-@manager.arg('issue_key')
-@manager.command
+@click.group()
+def cli():
+    pass
+
+
+@click.argument('issue_key')
+@cli.command()
 def open(issue_key):
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
     system('open %s' % url)
 
 
-@manager.arg('issue_key')
-@manager.command
+@click.argument('issue_key')
+@cli.command()
 def show(issue_key):
     issue = client.get_issue(issue_key)
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
@@ -45,8 +51,9 @@ def show(issue_key):
                 outward_issue.key, outward_issue.status))
 
 
-@manager.arg('issue_key', 'user')
-@manager.command
+@click.argument('issue_key')
+@click.argument('user')
+@cli.command()
 def assign(issue_key, user=None):
     if user is None:
         user = client.username
@@ -57,8 +64,9 @@ def assign(issue_key, user=None):
         print('There was a problem assigning {} to {}.'.format(issue_key, user))
 
 
-@manager.arg('issue_key', 'user')
-@manager.command
+@click.argument('issue_key')
+@click.argument('user')
+@cli.command()
 def unassign(issue_key):
     if client.assign(issue_key, None):
         print('{} has been unassigned.'.format(issue_key))
@@ -66,8 +74,8 @@ def unassign(issue_key):
         print('There was a problem unassigning {}.'.format(issue_key))
 
 
-@manager.arg('issue_key')
-@manager.command
+@click.argument('issue_key')
+@cli.command()
 def comment(issue_key):
     editor = Editor("""
 # Leave a comment on {}
@@ -81,8 +89,8 @@ def comment(issue_key):
         print(comment)
 
 
-@manager.arg('issue_key')
-@manager.command
+@click.argument('issue_key')
+@cli.command()
 def edit(issue_key):
     issue = client.get_issue(issue_key)
     editor = Editor(issue.description)
@@ -106,6 +114,4 @@ def main():
         exit()
 
     client = JIRAClient(base_url)
-
-    manager.main()
-
+    cli()

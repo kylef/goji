@@ -9,7 +9,7 @@ setup(
     author='Kyle Fuller',
     author_email='inbox@kylefuller.co.uk',
     packages=('goji',),
-    install_Requires=('requests', 'manage.py'),
+    install_requires=('requests', 'Click'),
     entry_points={
         'console_scripts': (
             'goji = goji:main',
