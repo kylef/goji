@@ -1,7 +1,9 @@
-from urlparse import urljoin, urlparse
 from netrc import netrc
 import json
+
 import requests
+from requests.compat import urljoin, urlparse
+
 from goji.models import Issue
 
 

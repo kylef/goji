@@ -1,7 +1,7 @@
-from urlparse import urljoin
 from os import environ
 
 import click
+from requests.compat import urljoin
 
 from goji.client import JIRAClient
 
