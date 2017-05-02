@@ -1,5 +1,5 @@
 from urlparse import urljoin
-from os import system, environ
+from os import environ
 
 import click
 
@@ -19,7 +19,7 @@ def cli():
 @cli.command()
 def open(issue_key):
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
-    system('open %s' % url)
+    click.launch(url)
 
 
 @click.argument('issue_key')
