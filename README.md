@@ -48,6 +48,14 @@ $ goji unassign GOJI-1
 GOJI-1 has been unassigned.
 ```
 
+### comment
+
+Add a comment to an issue, editing text in your `$EDITOR`
+
+```bash
+$ goji comment GOJI-1
+```
+
 ## License
 
 goji is released under the BSD license. See [LICENSE](LICENSE).
