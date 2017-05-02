@@ -56,6 +56,17 @@ Add a comment to an issue, editing text in your `$EDITOR`
 $ goji comment GOJI-1
 ```
 
+### search
+
+Search issues using
+[JQL](https://confluence.atlassian.com/jiracoreserver073/advanced-searching-861257209.html)
+
+```bash
+$ goji search "project=GOJI AND assignee=sam"
+GOJI-21 Update core metrics
+GOJI-40 Remove expired food from fridge
+```
+
 ## License
 
 goji is released under the BSD license. See [LICENSE](LICENSE).
