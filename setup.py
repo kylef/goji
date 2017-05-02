@@ -12,7 +12,7 @@ setup(
     install_requires=('requests', 'Click'),
     entry_points={
         'console_scripts': (
-            'goji = goji:main',
+            'goji = goji.commands:main',
         )
     },
     test_suite='goji.tests',
