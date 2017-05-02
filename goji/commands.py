@@ -11,7 +11,15 @@ client = None
 
 @click.group()
 def cli():
-    pass
+    global client
+
+    base_url = environ.get('GOJI_JIRA_BASE_URL')
+
+    if base_url is None:
+        print('== GOJI_JIRA_BASE_URL environmental variable is not set.')
+        exit()
+
+    client = JIRAClient(base_url)
 
 
 @click.argument('issue_key')
@@ -113,16 +121,3 @@ def search(query):
 
     for issue in issues:
         print('{issue.key} {issue.summary}'.format(issue=issue))
-
-
-def main():
-    global client
-
-    base_url = environ.get('GOJI_JIRA_BASE_URL')
-
-    if base_url is None:
-        print('== GOJI_JIRA_BASE_URL environmental variable is not set.')
-        exit()
-
-    client = JIRAClient(base_url)
-    cli()
