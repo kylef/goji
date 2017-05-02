@@ -15,6 +15,6 @@ setup(
             'goji = goji.commands:cli',
         )
     },
-    test_suite='goji.tests',
+    test_suite='tests',
 )
 
