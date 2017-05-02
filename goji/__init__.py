@@ -12,13 +12,15 @@ manager = Manager()
 @manager.arg('issue_key')
 @manager.command
 def open(issue_key):
+    """Open issue in a web browser"""
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
     system('open %s' % url)
 
 
-@manager.arg('issue_key')
+@manager.arg('issue_key', help='The issue identifier')
 @manager.command
 def show(issue_key):
+    """Print issue contents"""
     issue = client.get_issue(issue_key)
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
 
@@ -45,9 +47,11 @@ def show(issue_key):
                 outward_issue.key, outward_issue.status))
 
 
-@manager.arg('issue_key', 'user')
+@manager.arg('issue_key', help='The issue identifier')
+@manager.arg('user', help='The assignee, or yourself if unspecified')
 @manager.command
 def assign(issue_key, user=None):
+    """Assign an issue to a user"""
     if user is None:
         user = client.username
 
@@ -57,18 +61,20 @@ def assign(issue_key, user=None):
         print('There was a problem assigning {} to {}.'.format(issue_key, user))
 
 
-@manager.arg('issue_key', 'user')
+@manager.arg('issue_key', help='The issue identifier')
 @manager.command
 def unassign(issue_key):
+    """Unassign an issue"""
     if client.assign(issue_key, None):
         print('{} has been unassigned.'.format(issue_key))
     else:
         print('There was a problem unassigning {}.'.format(issue_key))
 
 
-@manager.arg('issue_key')
+@manager.arg('issue_key', help='The issue identifier')
 @manager.command
 def comment(issue_key):
+    """Comment on an issue"""
     editor = Editor("""
 # Leave a comment on {}
 """.format(issue_key))
@@ -81,9 +87,10 @@ def comment(issue_key):
         print(comment)
 
 
-@manager.arg('issue_key')
+@manager.arg('issue_key', help='The issue identifier')
 @manager.command
 def edit(issue_key):
+    """Edit issue description"""
     issue = client.get_issue(issue_key)
     editor = Editor(issue.description)
     description = editor.start()
