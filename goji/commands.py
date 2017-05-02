@@ -10,15 +10,9 @@ client = None
 
 
 @click.group()
-def cli():
+@click.option('--base-url', envvar='GOJI_BASE_URL', required=True)
+def cli(base_url):
     global client
-
-    base_url = environ.get('GOJI_JIRA_BASE_URL')
-
-    if base_url is None:
-        print('== GOJI_JIRA_BASE_URL environmental variable is not set.')
-        exit()
-
     client = JIRAClient(base_url)
 
 
