@@ -6,19 +6,17 @@ from requests.compat import urljoin
 from goji.client import JIRAClient
 
 
-client = None
-
-
 @click.group()
 @click.option('--base-url', envvar='GOJI_BASE_URL', required=True)
-def cli(base_url):
-    global client
-    client = JIRAClient(base_url)
+@click.pass_context
+def cli(ctx, base_url):
+    ctx.obj = JIRAClient(base_url)
 
 
 @click.argument('issue_key')
 @cli.command()
-def open(issue_key):
+@click.pass_obj
+def open(client, issue_key):
     """Open issue in a web browser"""
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
     click.launch(url)
@@ -26,7 +24,8 @@ def open(issue_key):
 
 @click.argument('issue_key')
 @cli.command()
-def show(issue_key):
+@click.pass_obj
+def show(client, issue_key):
     """Print issue contents"""
     issue = client.get_issue(issue_key)
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
@@ -54,10 +53,11 @@ def show(issue_key):
                 outward_issue.key, outward_issue.status))
 
 
+@click.argument('user', required=False)
 @click.argument('issue_key')
-@click.argument('user')
 @cli.command()
-def assign(issue_key, user=None):
+@click.pass_obj
+def assign(client, issue_key, user):
     """Assign an issue to a user"""
     if user is None:
         user = client.username
@@ -70,7 +70,8 @@ def assign(issue_key, user=None):
 
 @click.argument('issue_key')
 @cli.command()
-def unassign(issue_key):
+@click.pass_obj
+def unassign(client, issue_key):
     """Unassign an issue"""
     if client.assign(issue_key, None):
         print('{} has been unassigned.'.format(issue_key))
@@ -80,7 +81,8 @@ def unassign(issue_key):
 
 @click.argument('issue_key')
 @cli.command()
-def comment(issue_key):
+@click.pass_obj
+def comment(client, issue_key):
     """Comment on an issue"""
     MARKER = '# Leave a comment on {}'.format(issue_key)
     comment = click.edit(MARKER)
@@ -94,7 +96,8 @@ def comment(issue_key):
 
 @click.argument('issue_key')
 @cli.command()
-def edit(issue_key):
+@click.pass_obj
+def edit(client, issue_key):
     """Edit issue description"""
     issue = client.get_issue(issue_key)
     description = click.edit(issue.description)
@@ -109,7 +112,8 @@ def edit(issue_key):
 
 @click.argument('query')
 @cli.command()
-def search(query):
+@click.pass_obj
+def search(client, query):
     """Search issues using JQL"""
     issues = client.search(query)
 
