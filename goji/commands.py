@@ -10,7 +10,8 @@ from goji.client import JIRAClient
 @click.option('--base-url', envvar='GOJI_BASE_URL', required=True)
 @click.pass_context
 def cli(ctx, base_url):
-    ctx.obj = JIRAClient(base_url)
+    if not ctx.obj:
+        ctx.obj = JIRAClient(base_url)
 
 
 @click.argument('issue_key')
@@ -30,26 +31,26 @@ def show(client, issue_key):
     issue = client.get_issue(issue_key)
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
 
-    print('\x1b[01;32m-> {issue.key}\x1b[0m'.format(issue=issue))
-    print('  {issue.summary}\n'.format(issue=issue))
+    click.echo('\x1b[01;32m-> {issue.key}\x1b[0m'.format(issue=issue))
+    click.echo('  {issue.summary}\n'.format(issue=issue))
 
     if issue.description:
         for line in issue.description.splitlines():
-            print('  {}'.format(line))
+            click.echo('  {}'.format(line))
 
-        print('')
+        click.echo('')
 
-    print('  - Status: {issue.status}'.format(issue=issue))
-    print('  - Creator: {issue.creator}'.format(issue=issue))
-    print('  - Assigned: {issue.assignee}'.format(issue=issue))
-    print('  - URL: {url}'.format(url=url))
+    click.echo('  - Status: {issue.status}'.format(issue=issue))
+    click.echo('  - Creator: {issue.creator}'.format(issue=issue))
+    click.echo('  - Assigned: {issue.assignee}'.format(issue=issue))
+    click.echo('  - URL: {url}'.format(url=url))
 
     if issue.links:
-        print('\n  Related issues:')
+        click.echo('\n  Related issues:')
 
         for link in issue.links:
             outward_issue = link.outward_issue
-            print('  - %s: %s (%s)' % (link.link_type.outward.capitalize(),
+            click.echo('  - %s: %s (%s)' % (link.link_type.outward.capitalize(),
                 outward_issue.key, outward_issue.status))
 
 
