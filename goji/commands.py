@@ -54,10 +54,10 @@ def show(issue_key):
                 outward_issue.key, outward_issue.status))
 
 
+@click.argument('user', required=False)
 @click.argument('issue_key')
-@click.argument('user')
 @cli.command()
-def assign(issue_key, user=None):
+def assign(issue_key, user):
     """Assign an issue to a user"""
     if user is None:
         user = client.username
