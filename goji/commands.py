@@ -1,9 +1,8 @@
-from os import environ
-
 import click
 from requests.compat import urljoin
 
 from goji.client import JIRAClient
+from goji.auth import get_credentials, set_credentials
 
 
 @click.group()
@@ -11,13 +10,16 @@ from goji.client import JIRAClient
 @click.pass_context
 def cli(ctx, base_url):
     if not ctx.obj:
-        ctx.obj = JIRAClient(base_url)
+        if ctx.invoked_subcommand == 'login':
+            ctx.obj = base_url
+        else:
+            ctx.obj = JIRAClient(base_url)
 
 
 @click.argument('issue_key')
-@cli.command()
+@cli.command('open')
 @click.pass_obj
-def open(client, issue_key):
+def open_command(client, issue_key):
     """Open issue in a web browser"""
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
     click.launch(url)
@@ -109,6 +111,23 @@ def edit(client, issue_key):
         else:
             print('There was an issue saving the new description:')
             print(description)
+
+
+@cli.command()
+@click.pass_obj
+def login(base_url):
+    """Authenticate with JIRA server"""
+    email, password = get_credentials(base_url)
+    if email is not None:
+        if not click.confirm('This server is already configured. Override?'):
+            return
+
+    click.echo('Enter your JIRA credentials')
+
+    email = click.prompt('Email', type=str)
+    password = click.prompt('Password', type=str, hide_input=True)
+
+    set_credentials(base_url, email, password)
 
 
 @click.argument('query')
