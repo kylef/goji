@@ -5,7 +5,34 @@ goji
 
 goji is a minimal command line client for JIRA.
 
-**NOTE**: This is in early development, not fully ready yet.
+## Installation
+
+Install goji using pip:
+
+```bash
+$ pip install goji
+```
+
+## Configuration
+
+Once installed, goji requires the base URL of your Atlassian suite to be
+configured to run commands. It can be specified as a command argument or as an
+environment variable.
+
+```bash
+$ export GOJI_BASE_URL=https://example.atlassian.net
+```
+
+```bash
+$ goji --base-url https://example.atlassian.net show GOJI-43
+```
+
+To authenticate, use the [`login`](#login) command. This step is required to use
+the other commands:
+
+```bash
+$ goji login
+```
 
 ## Usage
 
