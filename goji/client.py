@@ -1,24 +1,22 @@
-from netrc import netrc
 import json
 
 import requests
-from requests.compat import urljoin, urlparse
+from requests.compat import urljoin
 
 from goji.models import Issue
+from goji.auth import get_credentials
 
 
 class JIRAClient(object):
     def __init__(self, base_url):
-        self.base_url = base_url
-        self.rest_base_url = urljoin(self.base_url, '/rest/api/2/')
+        email, password = get_credentials(base_url)
 
-        hostname = urlparse(self.base_url).hostname
-        hosts = netrc().hosts
-
-        if hostname in hosts:
-            self.auth = (hosts[hostname][0], hosts[hostname][2])
+        if email is not None and password is not None:
+            self.auth = (email, password)
+            self.base_url = base_url
+            self.rest_base_url = urljoin(self.base_url, '/rest/api/2/')
         else:
-            print('== Hostname %s not found in .netrc.' % hostname)
+            print('== Authentication not configured. Run `goji login`')
             exit()
 
     @property
