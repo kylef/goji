@@ -9,6 +9,17 @@ goji is a minimal command line client for JIRA.
 
 ## Usage
 
+### login
+
+Authenticate with a JIRA server.
+
+```bash
+$ goji login
+
+Email: delisa@example.com
+Password:
+```
+
 ### show
 
 Show detailed information about an issue.
