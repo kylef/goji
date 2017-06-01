@@ -3,7 +3,7 @@ import json
 import requests
 from requests.compat import urljoin
 
-from goji.models import Issue
+from goji.models import Issue, Transition
 from goji.auth import get_credentials
 
 
@@ -27,6 +27,18 @@ class JIRAClient(object):
         url = urljoin(self.rest_base_url, 'issue/%s' % issue_key)
         request = requests.get(url, auth=self.auth)
         return Issue.from_json(request.json())
+
+    def get_issue_transitions(self, issue_key):
+        url = urljoin(self.rest_base_url, 'issue/%s/transitions' % issue_key)
+        request = requests.get(url, auth=self.auth)
+        return map(Transition.from_json, request.json()['transitions'])
+
+    def change_status(self, issue_key, transition_id):
+        url = urljoin(self.rest_base_url, 'issue/%s/transitions' % issue_key)
+        headers = {'content-type': 'application/json'}
+        data = json.dumps({'transition': {'id': transition_id}})
+        request = requests.post(url, data=data, headers=headers, auth=self.auth)
+        return (request.status_code == 204)
 
     def edit_issue(self, issue_key, updated_fields):
         url = urljoin(self.rest_base_url, 'issue/%s' % issue_key)
