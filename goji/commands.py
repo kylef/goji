@@ -83,6 +83,31 @@ def unassign(client, issue_key):
 
 
 @click.argument('issue_key')
+@cli.command('change-status')
+@click.pass_obj
+def change_status(client, issue_key):
+    """Change the status of an issue"""
+    print('Fetching possible transitions...')
+    transitions = client.get_issue_transitions(issue_key)
+    if len(transitions) == 0:
+        print('No transitions found for {}'.format(issue_key))
+        return
+
+    for index, transition in enumerate(transitions):
+        print('{}: {}'.format(index, transition))
+    index = click.prompt('Select a transition', type=int)
+    if index < 0 or index >= len(transitions):
+        print('No transitions match "{}"'.format(index))
+        return
+
+    transition = transitions[index]
+    if client.change_status(issue_key, transition.id):
+        print('Okay, the status for {} is now "{}".'.format(issue_key, transition))
+    else:
+        print('There was an issue saving the new status as "{}"'.format(transition))
+
+
+@click.argument('issue_key')
 @cli.command()
 @click.pass_obj
 def comment(client, issue_key):

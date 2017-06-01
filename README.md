@@ -78,6 +78,20 @@ GOJI-21 Update core metrics
 GOJI-40 Remove expired food from fridge
 ```
 
+### change-status
+
+Change the status of an issue
+
+```bash
+$ goji change-status GOJI-311
+Fetching possible transitions...
+0: To Do
+1: In Progress
+2: Done
+Select a transition: 1
+Okay, the status for GOJI-311 is now "In Progress".
+```
+
 ## License
 
 goji is released under the BSD license. See [LICENSE](LICENSE).
