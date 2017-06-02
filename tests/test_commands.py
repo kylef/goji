@@ -80,3 +80,17 @@ class ChangeStatusCommandTests(unittest.TestCase):
         result = runner.invoke(cli, args, obj=TestClient(), input='1\n')
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Fetching possible transitions...\n0: Unstarted\n1: Going\n2: Done\nSelect a transition: 1\nOkay, the status for GOJI-311 is now "Going".\n')
+
+    def test_change_status_specify_invalid_status_name(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'change-status', 'GOJI-311', 'foo']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Fetching possible transitions...\nNo transitions match "foo"\n')
+
+    def test_change_status_specify_valid_status_name(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'change-status', 'GOJI-311', 'done']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Fetching possible transitions...\nOkay, the status for GOJI-311 is now "Done".\n')

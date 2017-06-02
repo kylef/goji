@@ -82,10 +82,11 @@ def unassign(client, issue_key):
         print('There was a problem unassigning {}.'.format(issue_key))
 
 
+@click.argument('status', required=False)
 @click.argument('issue_key')
 @cli.command('change-status')
 @click.pass_obj
-def change_status(client, issue_key):
+def change_status(client, issue_key, status):
     """Change the status of an issue"""
     print('Fetching possible transitions...')
     transitions = client.get_issue_transitions(issue_key)
@@ -93,12 +94,21 @@ def change_status(client, issue_key):
         print('No transitions found for {}'.format(issue_key))
         return
 
-    for index, transition in enumerate(transitions):
-        print('{}: {}'.format(index, transition))
-    index = click.prompt('Select a transition', type=int)
-    if index < 0 or index >= len(transitions):
-        print('No transitions match "{}"'.format(index))
-        return
+    if status is None:
+        for index, transition in enumerate(transitions):
+            print('{}: {}'.format(index, transition))
+        index = click.prompt('Select a transition', type=int)
+        if index < 0 or index >= len(transitions):
+            print('No transitions match "{}"'.format(index))
+            return
+    else:
+        index = -1
+        for idx, transition in enumerate(transitions):
+            if transition.name.lower() == status.lower():
+                index = idx
+        if index < 0:
+            print('No transitions match "{}"'.format(status))
+            return
 
     transition = transitions[index]
     if client.change_status(issue_key, transition.id):
