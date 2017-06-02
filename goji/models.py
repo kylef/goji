@@ -65,6 +65,19 @@ class IssueLink(Model):
     def __str__(self):
         pass
 
+
+class Transition(Model):
+    @classmethod
+    def from_json(cls, json):
+        return cls(json['id'], json['name'])
+
+    def __init__(self, identifier, name):
+        self.id = identifier
+        self.name = name
+
+    def __str__(self):
+        return self.name
+
 """
 class IssueType(object):
     id
