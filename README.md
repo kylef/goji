@@ -83,6 +83,12 @@ GOJI-40 Remove expired food from fridge
 Change the status of an issue
 
 ```bash
+$ goji change-status GOJI-311 "done"
+Fetching possible transitions...
+Okay, the status for GOJI-311 is now "Done".
+```
+
+```bash
 $ goji change-status GOJI-311
 Fetching possible transitions...
 0: To Do
