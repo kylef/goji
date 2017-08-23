@@ -155,6 +155,25 @@ def edit(client, issue_key):
             print('There was an issue saving the new description:')
             print(description)
 
+@click.argument('component', required=False)
+@click.argument('label', required=False)
+@click.argument('type')
+@cli.command()
+@click.pass_obj
+def new(client, component, label, epic):
+    """Create a new issue"""
+    description = click.edit()
+    if description is not None and description.strip().length() > 0:
+        fields = {'title': '',
+                  'description': description,
+                  component: component,
+                  label: label}
+        issue_key = client.create_issue(fields)
+        if issue_key is not None:
+            print('Okay, {} created'.format(issue_key))
+        else:
+            print('There was an issue saving the new issue:')
+            print(description)
 
 @cli.command()
 @click.pass_obj

@@ -107,3 +107,18 @@ class ChangeStatusCommandTests(unittest.TestCase):
         result = runner.invoke(cli, args, obj=TestClient())
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Fetching possible transitions...\nOkay, the status for GOJI-311 is now "Done".\n')
+
+
+class NewCommandTests(unittest.TestCase):
+    def test_new_title_description(self):
+        pass
+
+    def test_new_specify_component(self):
+        pass
+
+    def test_new_specify_label(self):
+        pass
+
+    def test_new_specify_type(self):
+        pass
+

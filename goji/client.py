@@ -57,6 +57,9 @@ class JIRAClient(object):
         response = self.put('issue/%s' % issue_key, data)
         return (response.status_code == 204) or (response.status_code == 200)
 
+    def create_issue(self, fields):
+        return None
+
     def assign(self, issue_key, name):
         response = self.put('issue/%s/assignee' % issue_key, {'name': name})
         return (response.status_code == 204) or (response.status_code == 200)
