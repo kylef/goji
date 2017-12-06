@@ -16,6 +16,14 @@ def cli(ctx, base_url):
             ctx.obj = JIRAClient(base_url)
 
 
+@cli.command('whoami')
+@click.pass_obj
+def open_command(client):
+    """View information regarding current user"""
+    user = client.get_user()
+    print(user)
+
+
 @click.argument('issue_key')
 @cli.command('open')
 @click.pass_obj
