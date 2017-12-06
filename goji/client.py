@@ -14,7 +14,7 @@ class JIRAClient(object):
         if email is not None and password is not None:
             self.auth = (email, password)
             self.base_url = base_url
-            self.rest_base_url = urljoin(self.base_url, '/rest/api/2/')
+            self.rest_base_url = urljoin(self.base_url, 'rest/api/2/')
         else:
             print('== Authentication not configured. Run `goji login`')
             exit()
