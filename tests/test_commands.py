@@ -4,7 +4,7 @@ import os
 from click.testing import CliRunner
 
 from goji.commands import cli
-from goji.models import Issue, Transition
+from goji.models import User, Issue, Transition
 
 
 class TestClient(object):
@@ -12,6 +12,9 @@ class TestClient(object):
 
     def __init__(self):
         pass
+
+    def get_user(self):
+        return User('kyle', 'Kyle Fuller')
 
     def get_issue(self, issue_key):
         issue = Issue(issue_key)
@@ -57,6 +60,16 @@ class ShowCommandTests(unittest.TestCase):
         result = runner.invoke(cli, ['--base-url=https://example.com', 'show', 'XX-123'], obj=TestClient())
 
         self.assertEqual(result.output, '-> XX-123\n  Example issue\n\n  - Status: Open\n  - Creator: kyle\n  - Assigned: kyle\n  - URL: https://goji.example.com/browse/XX-123\n')
+        self.assertEqual(result.exit_code, 0)
+
+
+class WhoamiCommandTests(unittest.TestCase):
+    def test_whoami(self):
+        runner = CliRunner()
+        result = runner.invoke(cli, ['--base-url=https://example.com', 'whoami'], obj=TestClient())
+
+        print(result.output)
+        self.assertTrue('Kyle Fuller (kyle)' in result.output)
         self.assertEqual(result.exit_code, 0)
 
 class ChangeStatusCommandTests(unittest.TestCase):

@@ -3,7 +3,7 @@ import json
 import requests
 from requests.compat import urljoin
 
-from goji.models import Issue, Transition
+from goji.models import User, Issue, Transition
 from goji.auth import get_credentials
 
 
@@ -34,6 +34,10 @@ class JIRAClient(object):
     @property
     def username(self):
         return self.auth[0]
+
+    def get_user(self):
+        response = self.get('myself')
+        return User.from_json(response.json())
 
     def get_issue(self, issue_key):
         response = self.get('issue/%s' % issue_key)
