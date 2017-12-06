@@ -56,7 +56,10 @@ class IssueLink(Model):
     @classmethod
     def from_json(cls, json):
         link_type = IssueLinkType.from_json(json['type'])
-        return cls(link_type, Issue.from_json(json['outwardIssue']))
+        if 'outwardIssue' in json:
+            return cls(link_type, Issue.from_json(json['outwardIssue']))
+
+        return cls(link_type, Issue.from_json(json['inwardIssue']))
 
     def __init__(self, link_type, outward_issue):
         self.link_type = link_type
