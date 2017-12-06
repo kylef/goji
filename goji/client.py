@@ -19,53 +19,48 @@ class JIRAClient(object):
             print('== Authentication not configured. Run `goji login`')
             exit()
 
+    def get(self, path):
+        url = urljoin(self.rest_base_url, path)
+        return requests.get(url, auth=self.auth)
+
+    def post(self, path, json):
+        url = urljoin(self.rest_base_url, path)
+        return requests.post(url, auth=self.auth, json=json)
+
+    def put(self, path, json):
+        url = urljoin(self.rest_base_url, path)
+        return requests.put(url, auth=self.auth, json=json)
+
     @property
     def username(self):
         return self.auth[0]
 
     def get_issue(self, issue_key):
-        url = urljoin(self.rest_base_url, 'issue/%s' % issue_key)
-        request = requests.get(url, auth=self.auth)
-        return Issue.from_json(request.json())
+        response = self.get('issue/%s' % issue_key)
+        return Issue.from_json(response.json())
 
     def get_issue_transitions(self, issue_key):
-        url = urljoin(self.rest_base_url, 'issue/%s/transitions' % issue_key)
-        request = requests.get(url, auth=self.auth)
-        return map(Transition.from_json, request.json()['transitions'])
+        response = self.get('issue/%s/transitions' % issue_key)
+        return map(Transition.from_json, response.json()['transitions'])
 
     def change_status(self, issue_key, transition_id):
-        url = urljoin(self.rest_base_url, 'issue/%s/transitions' % issue_key)
-        headers = {'content-type': 'application/json'}
-        data = json.dumps({'transition': {'id': transition_id}})
-        request = requests.post(url, data=data, headers=headers, auth=self.auth)
-        return (request.status_code == 204)
+        data = {'transition': {'id': transition_id}}
+        response = self.post('issue/%s/transitions' % issue_key, data)
+        return (response.status_code == 204)
 
     def edit_issue(self, issue_key, updated_fields):
-        url = urljoin(self.rest_base_url, 'issue/%s' % issue_key)
-        headers = {'content-type': 'application/json'}
-        data = json.dumps({'fields': updated_fields})
-        request = requests.put(url, data=data, headers=headers, auth=self.auth)
-        return (request.status_code == 204) or (request.status_code == 200)
+        data = {'fields': updated_fields}
+        response = self.put('issue/%s' % issue_key, data)
+        return (response.status_code == 204) or (response.status_code == 200)
 
     def assign(self, issue_key, name):
-        url = urljoin(self.rest_base_url, 'issue/%s/assignee' % issue_key)
-        headers = {'content-type': 'application/json'}
-        data = json.dumps({'name': name})
-        request = requests.put(url, data=data, headers=headers, auth=self.auth)
-        return (request.status_code == 204) or (request.status_code == 200)
+        response = self.put('issue/%s/assignee' % issue_key, {'name': name})
+        return (response.status_code == 204) or (response.status_code == 200)
 
     def comment(self, issue_key, comment):
-        url = urljoin(self.rest_base_url, 'issue/%s/comment' % issue_key)
-        headers = {'content-type': 'application/json'}
-        payload = json.dumps({'body': comment})
-        request = requests.post(url, data=payload, headers=headers,
-                                auth=self.auth)
-        return (request.status_code == 201) or (request.status_code == 200)
+        response = self.post('issue/%s/comment' % issue_key, {'body': comment})
+        return (response.status_code == 201) or (response.status_code == 200)
 
     def search(self, query):
-        url = urljoin(self.rest_base_url, 'search')
-        headers = {'content-type': 'application/json'}
-        payload = json.dumps({'jql': query})
-        request = requests.post(url, data=payload, headers=headers,
-                                auth=self.auth)
-        return map(Issue.from_json, request.json()['issues'])
+        response = self.post('search', {'jql': query})
+        return map(Issue.from_json, response.json()['issues'])
