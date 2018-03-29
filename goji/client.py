@@ -68,3 +68,19 @@ class JIRAClient(object):
     def search(self, query):
         response = self.post('search', {'jql': query})
         return map(Issue.from_json, response.json()['issues'])
+
+    def create_sprint(self, board_id, name, start_date=None, end_date=None):
+        payload = {
+            'originBoardId': board_id,
+            'name': name,
+        }
+
+        if start_date:
+            payload['startDate'] = start_date.isoformat()
+
+        if end_date:
+            payload['endDate'] = end_date.isoformat()
+
+        url = urljoin(self.base_url, 'rest/agile/1.0/sprint')
+        response = requests.post(url, auth=self.auth, json=payload)
+        return response.status_code == 201
