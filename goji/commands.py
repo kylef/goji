@@ -191,7 +191,7 @@ def sprint():
 
 
 @sprint.command('create')
-@click.argument('board_id', type=int)
+@click.argument('board_id', envvar='GOJI_BOARD_ID', type=int)
 @click.argument('name')
 @click.option('--start_date', type=Datetime(format='%d/%m/%y'), default=None)
 @click.option('--end_date', type=Datetime(format='%d/%m/%y'), default=None)
