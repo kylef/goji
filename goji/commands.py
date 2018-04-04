@@ -1,4 +1,5 @@
 import click
+from click_datetime import Datetime
 from requests.compat import urljoin
 
 from goji.client import JIRAClient
@@ -182,3 +183,24 @@ def search(client, query):
 
     for issue in issues:
         print('{issue.key} {issue.summary}'.format(issue=issue))
+
+
+@cli.group('sprint')
+def sprint():
+    pass
+
+
+@sprint.command('create')
+@click.argument('board_id', envvar='GOJI_BOARD_ID', type=int)
+@click.argument('name')
+@click.option('--start_date', type=Datetime(format='%d/%m/%y'), default=None)
+@click.option('--end_date', type=Datetime(format='%d/%m/%y'), default=None)
+@click.pass_obj
+def sprint_create(client, board_id, name, start_date, end_date):
+    """Create a sprint"""
+    created = client.create_sprint(board_id, name, start_date=start_date, end_date=end_date)
+
+    if created:
+        print('Sprint created')
+    else:
+        print('Sprint not created')
