@@ -9,27 +9,30 @@ from goji.auth import get_credentials
 
 class JIRAClient(object):
     def __init__(self, base_url):
+        self.session = requests.Session()
+        self.base_url = base_url
+        self.rest_base_url = urljoin(self.base_url, 'rest/api/2/')
+
         email, password = get_credentials(base_url)
 
         if email is not None and password is not None:
             self.auth = (email, password)
-            self.base_url = base_url
-            self.rest_base_url = urljoin(self.base_url, 'rest/api/2/')
+            self.session.auth = auth
         else:
             print('== Authentication not configured. Run `goji login`')
             exit()
 
     def get(self, path):
         url = urljoin(self.rest_base_url, path)
-        return requests.get(url, auth=self.auth)
+        return self.session.get(url)
 
     def post(self, path, json):
         url = urljoin(self.rest_base_url, path)
-        return requests.post(url, auth=self.auth, json=json)
+        return self.session.post(url, json=json)
 
     def put(self, path, json):
         url = urljoin(self.rest_base_url, path)
-        return requests.put(url, auth=self.auth, json=json)
+        return self.session.put(url, json=json)
 
     @property
     def username(self):
@@ -37,14 +40,17 @@ class JIRAClient(object):
 
     def get_user(self):
         response = self.get('myself')
+        response.raise_for_status()
         return User.from_json(response.json())
 
     def get_issue(self, issue_key):
         response = self.get('issue/%s' % issue_key)
+        response.raise_for_status()
         return Issue.from_json(response.json())
 
     def get_issue_transitions(self, issue_key):
         response = self.get('issue/%s/transitions' % issue_key)
+        response.raise_for_status()
         return map(Transition.from_json, response.json()['transitions'])
 
     def change_status(self, issue_key, transition_id):
@@ -67,6 +73,7 @@ class JIRAClient(object):
 
     def search(self, query):
         response = self.post('search', {'jql': query})
+        response.raise_for_status()
         return map(Issue.from_json, response.json()['issues'])
 
     def create_sprint(self, board_id, name, start_date=None, end_date=None):
@@ -82,5 +89,5 @@ class JIRAClient(object):
             payload['endDate'] = end_date.isoformat()
 
         url = urljoin(self.base_url, 'rest/agile/1.0/sprint')
-        response = requests.post(url, auth=self.auth, json=payload)
+        response = self.session.post(url, json=payload)
         return response.status_code == 201
