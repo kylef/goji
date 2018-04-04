@@ -2,13 +2,13 @@ import click
 from click_datetime import Datetime
 import requests
 from requests.compat import urljoin
-from requests_html import HTML
 
 from goji.client import JIRAClient
 from goji.auth import get_credentials, set_credentials
 
 
 def submit_form(session, response, data=None):
+    from requests_html import HTML
     html = HTML(url=response.url, html=response.text)
 
     forms = html.find('form')
