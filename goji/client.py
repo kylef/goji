@@ -17,7 +17,7 @@ class JIRAClient(object):
 
         if email is not None and password is not None:
             self.auth = (email, password)
-            self.session.auth = auth
+            self.session.auth = self.auth
         else:
             print('== Authentication not configured. Run `goji login`')
             exit()
