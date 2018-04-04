@@ -33,14 +33,19 @@ def submit_form(session, response, data=None):
 
 
 def check_login(client):
-    response = client.get('myself')
+    response = client.get('myself', allow_redirects=False)
 
-    if len(response.history) > 0:
+    if response.status_code == 302:
         # JIRA API may redirect to SSO Authentication if auth fails
+        # Manually follow redirect, some SSO requires browser user-agent
+        response = client.get(response.headers['Location'], headers={
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
+        })
+
         auth = client.session.auth
         client.session.auth = None
 
-        if '<body onLoad="document.myForm.submit()">' in response.text:
+        if '<body onLoad="document.myForm.submit()">' in response.text or '<body onLoad="submitForm()">' in response.text:
             # Pretend we're a JavaScript client
             response = submit_form(client.session, response)
 
@@ -52,7 +57,6 @@ def check_login(client):
         client.save_cookies()
 
     if response.status_code == 401:
-        print(response.text)
         click.echo('Incorrect credentials. Try `goji login`.')
         raise click.Abort()
 
