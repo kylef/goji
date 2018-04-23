@@ -1,3 +1,5 @@
+import sys
+
 import click
 from click_datetime import Datetime
 import requests
@@ -36,6 +38,9 @@ def check_login(client):
     response = client.get('myself', allow_redirects=False)
 
     if response.status_code == 302:
+        if sys.version_info.major == 2:
+            raise click.ClickException('JIRA instances requires SSO login. goji requires Python 3 to do this. Please upgrade to Python 3')
+
         # JIRA API may redirect to SSO Authentication if auth fails
         # Manually follow redirect, some SSO requires browser user-agent
         response = client.get(response.headers['Location'], headers={
@@ -57,8 +62,7 @@ def check_login(client):
         client.save_cookies()
 
     if response.status_code == 401:
-        click.echo('Incorrect credentials. Try `goji login`.')
-        raise click.Abort()
+        raise click.ClickException('Incorrect credentials. Try `goji login`.')
 
 
 @click.group()
