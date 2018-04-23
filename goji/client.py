@@ -32,7 +32,10 @@ class JIRAClient(object):
                 print('warning: Could not load cookies from dist: ' + e)
 
     def save_cookies(self):
-        if len(self.session.cookies) > 0:
+        cookies = self.session.cookies.keys()
+        cookies.remove('atlassian.xsrf.token')
+
+        if len(cookies) > 0:
             os.makedirs(os.path.expanduser('~/.goji'), exist_ok=True)
 
             with open(self.cookie_path, 'wb') as fp:

@@ -76,7 +76,9 @@ def cli(ctx, base_url):
                 exit()
 
             ctx.obj = JIRAClient(base_url, auth=(email, password))
-            check_login(ctx.obj)
+
+            if len(ctx.obj.session.cookies) > 0:
+                check_login(ctx.obj)
 
 @cli.command('whoami')
 @click.pass_obj
