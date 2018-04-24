@@ -1,3 +1,5 @@
+import os
+import pickle
 import json
 
 import requests
@@ -8,23 +10,44 @@ from goji.auth import get_credentials
 
 
 class JIRAClient(object):
-    def __init__(self, base_url):
+    def __init__(self, base_url, auth=None):
         self.session = requests.Session()
         self.base_url = base_url
         self.rest_base_url = urljoin(self.base_url, 'rest/api/2/')
+        self.session.auth = auth
+        self.load_cookies()
 
-        email, password = get_credentials(base_url)
+    # Persistent Cookie
 
-        if email is not None and password is not None:
-            self.auth = (email, password)
-            self.session.auth = self.auth
-        else:
-            print('== Authentication not configured. Run `goji login`')
-            exit()
+    @property
+    def cookie_path(self):
+        return os.path.expanduser('~/.goji/cookies')
 
-    def get(self, path):
+    def load_cookies(self):
+        if os.path.exists(self.cookie_path):
+            try:
+                with open(self.cookie_path, 'rb') as fp:
+                    self.session.cookies = pickle.load(fp)
+            except Exception as e:
+                print('warning: Could not load cookies from dist: ' + e)
+
+    def save_cookies(self):
+        cookies = self.session.cookies.keys()
+        cookies.remove('atlassian.xsrf.token')
+
+        if len(cookies) > 0:
+            os.makedirs(os.path.expanduser('~/.goji'), exist_ok=True)
+
+            with open(self.cookie_path, 'wb') as fp:
+                pickle.dump(self.session.cookies, fp)
+        elif os.path.exists(self.cookie_path):
+            os.remove(self.cookie_path)
+
+    # Methods
+
+    def get(self, path, **kwargs):
         url = urljoin(self.rest_base_url, path)
-        return self.session.get(url)
+        return self.session.get(url, **kwargs)
 
     def post(self, path, json):
         url = urljoin(self.rest_base_url, path)
@@ -39,7 +62,7 @@ class JIRAClient(object):
         return self.auth[0]
 
     def get_user(self):
-        response = self.get('myself')
+        response = self.get('myself', allow_redirects=False)
         response.raise_for_status()
         return User.from_json(response.json())
 

@@ -1,9 +1,68 @@
+import sys
+
 import click
 from click_datetime import Datetime
+import requests
 from requests.compat import urljoin
 
 from goji.client import JIRAClient
 from goji.auth import get_credentials, set_credentials
+
+
+def submit_form(session, response, data=None):
+    from requests_html import HTML
+    html = HTML(url=response.url, html=response.text)
+
+    forms = html.find('form')
+    if len(forms) == 0:
+        raise Exception('Page does have any forms')
+
+    form = forms[0]
+    url = form.attrs['action']
+    fields = form.find('input')
+
+    data = data or {}
+
+    for field in fields:
+        name = field.attrs['name']
+
+        if name not in data:
+            value = field.attrs['value']
+            data[name] = value
+
+    response = session.post(urljoin(response.url, url), data=data)
+    return response
+
+
+def check_login(client):
+    response = client.get('myself', allow_redirects=False)
+
+    if response.status_code == 302:
+        if sys.version_info.major == 2:
+            raise click.ClickException('JIRA instances requires SSO login. goji requires Python 3 to do this. Please upgrade to Python 3')
+
+        # JIRA API may redirect to SSO Authentication if auth fails
+        # Manually follow redirect, some SSO requires browser user-agent
+        response = client.get(response.headers['Location'], headers={
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
+        })
+
+        auth = client.session.auth
+        client.session.auth = None
+
+        if '<body onLoad="document.myForm.submit()">' in response.text or '<body onLoad="submitForm()">' in response.text:
+            # Pretend we're a JavaScript client
+            response = submit_form(client.session, response)
+
+        response = submit_form(client.session, response, {
+            'ssousername': auth[0],
+            'password': auth[1]
+        })
+
+        client.save_cookies()
+
+    if response.status_code == 401:
+        raise click.ClickException('Incorrect credentials. Try `goji login`.')
 
 
 @click.group()
@@ -14,8 +73,16 @@ def cli(ctx, base_url):
         if ctx.invoked_subcommand == 'login':
             ctx.obj = base_url
         else:
-            ctx.obj = JIRAClient(base_url)
+            email, password = get_credentials(base_url)
 
+            if not email or not password:
+                print('== Authentication not configured. Run `goji login`')
+                exit()
+
+            ctx.obj = JIRAClient(base_url, auth=(email, password))
+
+            if len(ctx.obj.session.cookies) > 0:
+                check_login(ctx.obj)
 
 @cli.command('whoami')
 @click.pass_obj
@@ -171,6 +238,8 @@ def login(base_url):
     email = click.prompt('Email', type=str)
     password = click.prompt('Password', type=str, hide_input=True)
 
+    client = JIRAClient(base_url, auth=(email, password))
+    check_login(client)
     set_credentials(base_url, email, password)
 
 
