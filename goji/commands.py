@@ -224,6 +224,42 @@ def edit(client, issue_key):
             print(description)
 
 
+@click.argument('issue_type', required=False)
+@click.argument('summary')
+@click.argument('project', metavar='<key>')
+@click.option('--component', '-c', multiple=True, help='Adds a component')
+@click.option('--priority', '-p', help='Sets the issue priority')
+@cli.command()
+@click.pass_obj
+def create(client, issue_type, summary, project, component, priority):
+    """
+    Create a new issue, prompting for description contents
+
+    Example:
+
+    \b
+        goji create ENG 'Update installation guide' 'Task' \\
+            --component Handbook --component External \\
+            --priority Low
+    """
+    description = click.edit()
+    if description is not None:
+        fields = {'summary': summary,
+                  'description': description,
+                  'project': {'key': project},
+                  'components': [{'name': x} for x in component]}
+        if priority is not None:
+            fields['priority'] = {'name': priority}
+        if issue_type is not None:
+            fields['issuetype'] = {'name': issue_type}
+        issue_key = client.create_issue(fields)
+        if issue_key is not None:
+            click.echo('Okay, {} created'.format(issue_key))
+        else:
+            click.echo('There was an issue saving the new issue:')
+            click.echo(description)
+
+
 @cli.command()
 @click.pass_obj
 def login(base_url):

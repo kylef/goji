@@ -86,6 +86,17 @@ class JIRAClient(object):
         response = self.put('issue/%s' % issue_key, data)
         return (response.status_code == 204) or (response.status_code == 200)
 
+    def create_issue(self, fields):
+        url = urljoin(self.rest_base_url, 'issue')
+        headers = {'content-type': 'application/json'}
+        data = json.dumps({'fields': fields})
+        request = requests.post(url, data=data, headers=headers,
+                                auth=self.auth)
+        if request.status_code == 201:
+            return request.json()['key']
+
+        return None
+
     def assign(self, issue_key, name):
         response = self.put('issue/%s/assignee' % issue_key, {'name': name})
         return (response.status_code == 204) or (response.status_code == 200)
