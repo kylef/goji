@@ -59,7 +59,7 @@ class JIRAClient(object):
 
     @property
     def username(self):
-        return self.auth[0]
+        return self.session.auth[0]
 
     def get_user(self):
         response = self.get('myself', allow_redirects=False)
@@ -91,7 +91,7 @@ class JIRAClient(object):
         headers = {'content-type': 'application/json'}
         data = json.dumps({'fields': fields})
         request = requests.post(url, data=data, headers=headers,
-                                auth=self.auth)
+                                auth=self.session.auth)
         if request.status_code == 201:
             return request.json()['key']
 
