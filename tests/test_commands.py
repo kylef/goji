@@ -10,9 +10,6 @@ from goji.models import User, Issue, Transition
 class TestClient(object):
     base_url = 'https://goji.example.com/'
 
-    def __init__(self):
-        pass
-
     def get_user(self):
         return User('kyle', 'Kyle Fuller')
 
