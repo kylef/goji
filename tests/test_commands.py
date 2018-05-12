@@ -82,6 +82,16 @@ class AssignCommandTests(unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
 
 
+class UnassignCommandTests(unittest.TestCase):
+    def test_unassign(self):
+        runner = CliRunner()
+        result = runner.invoke(cli, ['--base-url=https://example.com', 'unassign', 'GOJI-123'], obj=TestClient())
+
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'GOJI-123 has been unassigned.\n')
+        self.assertEqual(result.exit_code, 0)
+
+
 class WhoamiCommandTests(unittest.TestCase):
     def test_whoami(self):
         runner = CliRunner()
