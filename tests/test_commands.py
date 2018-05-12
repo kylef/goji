@@ -68,7 +68,6 @@ class WhoamiCommandTests(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(cli, ['--base-url=https://example.com', 'whoami'], obj=TestClient())
 
-        print(result.output)
         self.assertTrue('Kyle Fuller (kyle)' in result.output)
         self.assertEqual(result.exit_code, 0)
 
