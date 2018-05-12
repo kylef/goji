@@ -1,7 +1,7 @@
 import unittest
 import datetime
 
-from goji.client import JIRAClient
+from goji.client import JIRAClient, JIRAException
 
 from tests.server import JIRAServer
 
@@ -17,6 +17,17 @@ class ClientTests(unittest.TestCase):
 
     def setUp(self):
         self.client = JIRAClient(self.server.url)
+
+    def test_post_400_error(self):
+        self.server.response.status_code = 400
+        self.server.response.body = {
+            'errorMessages': ['Big Problem']
+        }
+
+        with self.assertRaises(JIRAException):
+            self.client.post('path', {
+                'body': 'example',
+            })
 
     def test_get_user(self):
         self.server.response.body = {
