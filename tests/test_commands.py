@@ -9,6 +9,7 @@ from goji.models import User, Issue, Transition
 
 class TestClient(object):
     base_url = 'https://goji.example.com/'
+    username = 'kyle'
 
     def get_user(self):
         return User('kyle', 'Kyle Fuller')
@@ -34,6 +35,9 @@ class TestClient(object):
     def change_status(self, issue_key, transition_id):
         return True
 
+    def assign(self, issue_key, user):
+        return True
+
 
 class CLITests(unittest.TestCase):
     def test_error_without_base_url(self):
@@ -57,6 +61,24 @@ class ShowCommandTests(unittest.TestCase):
         result = runner.invoke(cli, ['--base-url=https://example.com', 'show', 'XX-123'], obj=TestClient())
 
         self.assertEqual(result.output, '-> XX-123\n  Example issue\n\n  - Status: Open\n  - Creator: kyle\n  - Assigned: kyle\n  - URL: https://goji.example.com/browse/XX-123\n')
+        self.assertEqual(result.exit_code, 0)
+
+
+class AssignCommandTests(unittest.TestCase):
+    def test_assign_specified_user(self):
+        runner = CliRunner()
+        result = runner.invoke(cli, ['--base-url=https://example.com', 'assign', 'GOJI-123', 'jones'], obj=TestClient())
+
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Okay, GOJI-123 has been assigned to jones.\n')
+        self.assertEqual(result.exit_code, 0)
+
+    def test_assign_current_user(self):
+        runner = CliRunner()
+        result = runner.invoke(cli, ['--base-url=https://example.com', 'assign', 'GOJI-123'], obj=TestClient())
+
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Okay, GOJI-123 has been assigned to kyle.\n')
         self.assertEqual(result.exit_code, 0)
 
 
