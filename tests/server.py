@@ -78,4 +78,3 @@ class JIRAServer(object):
         self.server.shutdown()
         self.thread.join()
         self.server.server_close()
-

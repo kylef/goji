@@ -60,4 +60,3 @@ class IssueTests(unittest.TestCase):
     def test_string_conversion(self):
         issue = Issue(key='GOJI-1')
         self.assertEqual(str(issue), 'GOJI-1')
-

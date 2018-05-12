@@ -4,8 +4,8 @@ python:
   - '3.6'
 install:
   - pip install -e .
-  - pip install pytest-cov coveralls
+  - pip install pytest-cov pytest-pep8 coveralls
 script:
-  - py.test --cov=goji
+  - py.test --cov=goji --pep8
 after_success:
   - coveralls

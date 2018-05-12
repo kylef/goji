@@ -71,6 +71,7 @@ class WhoamiCommandTests(unittest.TestCase):
         self.assertTrue('Kyle Fuller (kyle)' in result.output)
         self.assertEqual(result.exit_code, 0)
 
+
 class ChangeStatusCommandTests(unittest.TestCase):
     def test_change_status_invalid_issue_key(self):
         runner = CliRunner()
@@ -120,4 +121,3 @@ class NewCommandTests(unittest.TestCase):
 
     def test_new_specify_type(self):
         pass
-

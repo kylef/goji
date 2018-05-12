@@ -84,6 +84,7 @@ def cli(ctx, base_url):
             if len(ctx.obj.session.cookies) > 0:
                 check_login(ctx.obj)
 
+
 @cli.command('whoami')
 @click.pass_obj
 def open_command(client):
@@ -129,7 +130,7 @@ def show(client, issue_key):
         for link in issue.links:
             outward_issue = link.outward_issue
             click.echo('  - %s: %s (%s)' % (link.link_type.outward.capitalize(),
-                outward_issue.key, outward_issue.status))
+                       outward_issue.key, outward_issue.status))
 
 
 @click.argument('user', required=False)
