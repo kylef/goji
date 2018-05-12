@@ -255,10 +255,11 @@ def create(client, issue_type, summary, project, component, priority):
             fields['priority'] = {'name': priority}
         if issue_type is not None:
             fields['issuetype'] = {'name': issue_type}
-        issue_key = client.create_issue(fields)
-        if issue_key is not None:
-            click.echo('Okay, {} created'.format(issue_key))
-        else:
+
+        try:
+            issue = client.create_issue(fields)
+            click.echo('Issue {} created'.format(issue.key))
+        except Exception:
             click.echo('There was an issue saving the new issue:')
             click.echo(description)
 

@@ -112,12 +112,8 @@ class JIRAClient(object):
         return (response.status_code == 204) or (response.status_code == 200)
 
     def create_issue(self, fields):
-        request = self.post('issue', {'fields': fields})
-
-        if request.status_code == 201:
-            return request.json()['key']
-
-        return None
+        response = self.post('issue', {'fields': fields})
+        return Issue.from_json(response.json())
 
     def assign(self, issue_key, name):
         response = self.put('issue/%s/assignee' % issue_key, {'name': name})

@@ -21,17 +21,19 @@ class Issue(Model):
     @classmethod
     def from_json(cls, json):
         issue = cls(json['key'])
-        fields = json['fields']
-        issue.summary = fields['summary']
-        issue.description = fields.get('description')
-        issue.creator = User.from_json(fields.get('creator'))
-        issue.assignee = User.from_json(fields.get('assignee'))
-        issue.status = fields['status']['name']
 
-        links = []
-        if 'issuelinks' in fields:
-            links = [IssueLink.from_json(link) for link in fields['issuelinks']]
-        issue.links = links
+        if 'fields' in json:
+            fields = json['fields']
+            issue.summary = fields['summary']
+            issue.description = fields.get('description')
+            issue.creator = User.from_json(fields.get('creator'))
+            issue.assignee = User.from_json(fields.get('assignee'))
+            issue.status = fields['status']['name']
+
+            links = []
+            if 'issuelinks' in fields:
+                links = [IssueLink.from_json(link) for link in fields['issuelinks']]
+            issue.links = links
 
         return issue
 

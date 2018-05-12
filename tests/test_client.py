@@ -79,12 +79,15 @@ class ClientTests(unittest.TestCase):
     def test_create_issue(self):
         self.server.response.status_code = 201
         self.server.response.body = {
+            'id': '10000',
             'key': 'GOJI-14',
         }
 
-        self.client.create_issue({
+        issue = self.client.create_issue({
             'summary': 'Test Creating Issues in JIRA Client',
         })
+
+        self.assertEqual(issue.key, 'GOJI-14')
 
         self.assertEqual(self.server.last_request.method, 'POST')
         self.assertEqual(self.server.last_request.path, '/rest/api/2/issue')
