@@ -76,7 +76,7 @@ def cli(ctx, base_url):
             email, password = get_credentials(base_url)
 
             if not email or not password:
-                print('== Authentication not configured. Run `goji login`')
+                click.echo('== Authentication not configured. Run `goji login`')
                 exit()
 
             ctx.obj = JIRAClient(base_url, auth=(email, password))
@@ -89,7 +89,7 @@ def cli(ctx, base_url):
 def open_command(client):
     """View information regarding current user"""
     user = client.get_user()
-    print(user)
+    click.echo(user)
 
 
 @click.argument('issue_key')
@@ -142,9 +142,9 @@ def assign(client, issue_key, user):
         user = client.username
 
     if client.assign(issue_key, user):
-        print('Okay, {} has been assigned to {}.'.format(issue_key, user))
+        click.echo('Okay, {} has been assigned to {}.'.format(issue_key, user))
     else:
-        print('There was a problem assigning {} to {}.'.format(issue_key, user))
+        click.echo('There was a problem assigning {} to {}.'.format(issue_key, user))
 
 
 @click.argument('issue_key')
@@ -153,9 +153,9 @@ def assign(client, issue_key, user):
 def unassign(client, issue_key):
     """Unassign an issue"""
     if client.assign(issue_key, None):
-        print('{} has been unassigned.'.format(issue_key))
+        click.echo('{} has been unassigned.'.format(issue_key))
     else:
-        print('There was a problem unassigning {}.'.format(issue_key))
+        click.echo('There was a problem unassigning {}.'.format(issue_key))
 
 
 @click.argument('status', required=False)
@@ -164,18 +164,18 @@ def unassign(client, issue_key):
 @click.pass_obj
 def change_status(client, issue_key, status):
     """Change the status of an issue"""
-    print('Fetching possible transitions...')
+    click.echo('Fetching possible transitions...')
     transitions = client.get_issue_transitions(issue_key)
     if len(transitions) == 0:
-        print('No transitions found for {}'.format(issue_key))
+        click.echo('No transitions found for {}'.format(issue_key))
         return
 
     if status is None:
         for index, transition in enumerate(transitions):
-            print('{}: {}'.format(index, transition))
+            click.echo('{}: {}'.format(index, transition))
         index = click.prompt('Select a transition', type=int)
         if index < 0 or index >= len(transitions):
-            print('No transitions match "{}"'.format(index))
+            click.echo('No transitions match "{}"'.format(index))
             return
     else:
         index = -1
@@ -183,14 +183,14 @@ def change_status(client, issue_key, status):
             if transition.name.lower() == status.lower():
                 index = idx
         if index < 0:
-            print('No transitions match "{}"'.format(status))
+            click.echo('No transitions match "{}"'.format(status))
             return
 
     transition = transitions[index]
     if client.change_status(issue_key, transition.id):
-        print('Okay, the status for {} is now "{}".'.format(issue_key, transition))
+        click.echo('Okay, the status for {} is now "{}".'.format(issue_key, transition))
     else:
-        print('There was an issue saving the new status as "{}"'.format(transition))
+        click.echo('There was an issue saving the new status as "{}"'.format(transition))
 
 
 @click.argument('issue_key')
@@ -202,10 +202,10 @@ def comment(client, issue_key):
     comment = click.edit(MARKER)
 
     if comment is not None and client.comment(issue_key, comment):
-        print('Comment created')
+        click.echo('Comment created')
     else:
-        print('Comment failed')
-        print(comment)
+        click.echo('Comment failed')
+        click.echo(comment)
 
 
 @click.argument('issue_key')
@@ -218,10 +218,10 @@ def edit(client, issue_key):
 
     if description is not None and description.strip() != issue.description.strip():
         if client.edit_issue(issue_key, {'description': description.strip()}):
-            print('Okay, the description for {} has been updated.'.format(issue_key))
+            click.echo('Okay, the description for {} has been updated.'.format(issue_key))
         else:
-            print('There was an issue saving the new description:')
-            print(description)
+            click.echo('There was an issue saving the new description:')
+            click.echo(description)
 
 
 @click.argument('issue_type', required=False)
@@ -287,7 +287,7 @@ def search(client, query):
     issues = client.search(query)
 
     for issue in issues:
-        print('{issue.key} {issue.summary}'.format(issue=issue))
+        click.echo('{issue.key} {issue.summary}'.format(issue=issue))
 
 
 @cli.group('sprint')
@@ -306,6 +306,6 @@ def sprint_create(client, board_id, name, start_date, end_date):
     created = client.create_sprint(board_id, name, start_date=start_date, end_date=end_date)
 
     if created:
-        print('Sprint created')
+        click.echo('Sprint created')
     else:
-        print('Sprint not created')
+        click.echo('Sprint not created')
