@@ -4,7 +4,7 @@ import os
 from click.testing import CliRunner
 
 from goji.commands import cli
-from goji.models import User, Issue, Transition
+from goji.models import User, Issue, Transition, Issue
 
 
 class TestClient(object):
@@ -36,6 +36,14 @@ class TestClient(object):
 
     def change_status(self, issue_key, transition_id):
         return True
+
+    def search(self, query):
+        issue_7 = Issue('GOJI-7')
+        issue_7.summary = 'My First Issue'
+
+        return [
+            issue_7
+        ]
 
 
 class CLITests(unittest.TestCase):
@@ -107,6 +115,15 @@ class ChangeStatusCommandTests(unittest.TestCase):
         result = runner.invoke(cli, args, obj=TestClient())
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Fetching possible transitions...\nOkay, the status for GOJI-311 is now "Done".\n')
+
+
+class SearchCommandTests(unittest.TestCase):
+    def test_search(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'GOJI-7 My First Issue\n')
 
 
 class NewCommandTests(unittest.TestCase):
