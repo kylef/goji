@@ -62,17 +62,30 @@ class IssueLink(Model):
     @classmethod
     def from_json(cls, json):
         link_type = IssueLinkType.from_json(json['type'])
+        issue_link = cls(link_type)
+
         if 'outwardIssue' in json:
-            return cls(link_type, Issue.from_json(json['outwardIssue']))
+            issue_link.outward_issue = Issue.from_json(json['outwardIssue'])
 
-        return cls(link_type, Issue.from_json(json['inwardIssue']))
+        if 'inwardIssue' in json:
+            issue_link.inward_issue = Issue.from_json(json['inwardIssue'])
 
-    def __init__(self, link_type, outward_issue):
+        return issue_link
+
+    def __init__(self, link_type, inward_issue=None, outward_issue=None):
         self.link_type = link_type
+        self.inward_issue = inward_issue
         self.outward_issue = outward_issue
 
     def __str__(self):
-        pass
+        if self.outward_issue:
+            direction = self.link_type.outward.capitalize()
+            issue = self.outward_issue
+        elif self.inward_issue:
+            direction = self.link_type.inward.capitalize()
+            issue = self.inward_issue
+
+        return '{direction}: {issue.key} ({issue.status})'.format(direction=direction, issue=issue)
 
 
 class Transition(Model):
@@ -86,6 +99,40 @@ class Transition(Model):
 
     def __str__(self):
         return self.name
+
+
+class Comment(Model):
+    @classmethod
+    def from_json(cls, json):
+        comment = cls(json['id'], json['body'])
+
+        if 'author' in json:
+            comment.author = User.from_json(json['author'])
+
+        return comment
+
+    def __init__(self, identifier, message):
+        self.id = identifier
+        self.message = message
+        self.author = None
+
+    def __str__(self):
+        return self.message
+
+
+class Sprint(Model):
+    @classmethod
+    def from_json(cls, json):
+        return cls(json['id'], json['name'], json['state'])
+
+    def __init__(self, identifier, name, state):
+        self.id = identifier
+        self.name = name
+        self.state = state
+
+    def __str__(self):
+        return self.name
+
 
 """
 class IssueType(object):

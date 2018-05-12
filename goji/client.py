@@ -6,7 +6,7 @@ import click
 import requests
 from requests.compat import urljoin
 
-from goji.models import User, Issue, Transition
+from goji.models import User, Issue, Transition, Sprint, Comment
 from goji.auth import get_credentials
 
 
@@ -60,7 +60,7 @@ class JIRAClient(object):
     # Methods
 
     def validate_response(self, response):
-        if response.status_code == 400:
+        if response.status_code >= 400 and 'application/json' in response.headers.get('Content-Type', ''):
             error = response.json()
             raise JIRAException(error.get('errorMessages', []), error.get('errors', {}))
 
@@ -125,12 +125,12 @@ class JIRAClient(object):
 
     def comment(self, issue_key, comment):
         response = self.post('issue/%s/comment' % issue_key, {'body': comment})
-        return (response.status_code == 201) or (response.status_code == 200)
+        return Comment.from_json(response.json())
 
     def search(self, query):
         response = self.post('search', {'jql': query})
         response.raise_for_status()
-        return map(Issue.from_json, response.json()['issues'])
+        return list(map(Issue.from_json, response.json()['issues']))
 
     def create_sprint(self, board_id, name, start_date=None, end_date=None):
         payload = {
@@ -146,4 +146,5 @@ class JIRAClient(object):
 
         url = urljoin(self.base_url, 'rest/agile/1.0/sprint')
         response = self.session.post(url, json=payload)
-        return response.status_code == 201
+        self.validate_response(response)
+        return Sprint.from_json(response.json())

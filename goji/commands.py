@@ -128,9 +128,7 @@ def show(client, issue_key):
         click.echo('\n  Related issues:')
 
         for link in issue.links:
-            outward_issue = link.outward_issue
-            click.echo('  - %s: %s (%s)' % (link.link_type.outward.capitalize(),
-                       outward_issue.key, outward_issue.status))
+            click.echo('    - {}'.format(link))
 
 
 @click.argument('user', required=False)
@@ -202,9 +200,13 @@ def comment(client, issue_key):
     MARKER = '# Leave a comment on {}'.format(issue_key)
     comment = click.edit(MARKER)
 
-    if comment is not None and client.comment(issue_key, comment):
+    if comment is None or len(comment) == 0:
+        return
+
+    try:
+        client.comment(issue_key, comment)
         click.echo('Comment created')
-    else:
+    except Exception:
         click.echo('Comment failed')
         click.echo(comment)
 
@@ -312,9 +314,6 @@ def sprint():
 @click.pass_obj
 def sprint_create(client, board_id, name, start_date, end_date):
     """Create a sprint"""
-    created = client.create_sprint(board_id, name, start_date=start_date, end_date=end_date)
 
-    if created:
-        click.echo('Sprint created')
-    else:
-        click.echo('Sprint not created')
+    sprint = client.create_sprint(board_id, name, start_date=start_date, end_date=end_date)
+    click.echo('Sprint created')
