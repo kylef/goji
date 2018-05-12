@@ -87,11 +87,8 @@ class JIRAClient(object):
         return (response.status_code == 204) or (response.status_code == 200)
 
     def create_issue(self, fields):
-        url = urljoin(self.rest_base_url, 'issue')
-        headers = {'content-type': 'application/json'}
-        data = json.dumps({'fields': fields})
-        request = requests.post(url, data=data, headers=headers,
-                                auth=self.session.auth)
+        request = self.post('issue', {'fields': fields})
+
         if request.status_code == 201:
             return request.json()['key']
 
