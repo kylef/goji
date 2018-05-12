@@ -37,6 +37,11 @@ class Issue(Model):
 
     def __init__(self, key):
         self.key = key
+        self.summary = None
+        self.description = None
+        self.creator = None
+        self.assignee = None
+        self.status = None
 
     def __str__(self):
         return self.key

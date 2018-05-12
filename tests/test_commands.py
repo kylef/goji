@@ -4,7 +4,7 @@ import os
 from click.testing import CliRunner
 
 from goji.commands import cli
-from goji.models import User, Issue, Transition
+from goji.models import User, Issue, Transition, Issue
 
 
 class TestClient(object):
@@ -34,6 +34,17 @@ class TestClient(object):
 
     def change_status(self, issue_key, transition_id):
         return True
+
+    def search(self, query):
+        issue_7 = Issue('GOJI-7')
+        issue_7.summary = 'My First Issue'
+        issue_7.description = 'One\nTwo\nThree\n'
+        issue_7.creator = User('kyle', 'Kyle Fuller')
+        issue_7.assignee = User('delisa', 'Delisa')
+
+        return [
+            issue_7
+        ]
 
     def assign(self, issue_key, user):
         return True
@@ -136,6 +147,50 @@ class ChangeStatusCommandTests(unittest.TestCase):
         result = runner.invoke(cli, args, obj=TestClient())
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Fetching possible transitions...\nOkay, the status for GOJI-311 is now "Done".\n')
+
+
+class SearchCommandTests(unittest.TestCase):
+    def test_search(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'GOJI-7 My First Issue\n')
+
+    def test_search_format_key(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', '--format={key}', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'GOJI-7\n')
+
+    def test_search_format_summary(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', '--format={summary}', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'My First Issue\n')
+
+    def test_search_format_description(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', '--format={description}', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'One\nTwo\nThree\n\n')
+
+    def test_search_format_creator(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', '--format={creator}', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Kyle Fuller (kyle)\n')
+
+    def test_search_format_assignee(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', '--format={assignee}', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Delisa (delisa)\n')
 
 
 class NewCommandTests(unittest.TestCase):
