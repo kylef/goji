@@ -128,9 +128,7 @@ def show(client, issue_key):
         click.echo('\n  Related issues:')
 
         for link in issue.links:
-            outward_issue = link.outward_issue
-            click.echo('  - %s: %s (%s)' % (link.link_type.outward.capitalize(),
-                       outward_issue.key, outward_issue.status))
+            click.echo('    - {}'.format(link))
 
 
 @click.argument('user', required=False)
