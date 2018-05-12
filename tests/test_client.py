@@ -64,6 +64,7 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(self.server.last_request.path, '/rest/api/2/issue/GOJI-13')
 
     def test_create_issue(self):
+        self.server.response.status_code = 201
         self.server.response.body = {
             'key': 'GOJI-14',
         }
