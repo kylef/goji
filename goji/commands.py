@@ -281,14 +281,22 @@ def login(base_url):
 
 
 @click.argument('query')
+@click.option('--format', default='{key} {summary}')
 @cli.command()
 @click.pass_obj
-def search(client, query):
+def search(client, format, query):
     """Search issues using JQL"""
+
     issues = client.search(query)
 
     for issue in issues:
-        click.echo('{issue.key} {issue.summary}'.format(issue=issue))
+        click.echo(format.replace('\\n', '\n').format(
+            key=issue.key,
+            summary=issue.summary,
+            description=issue.description,
+            creator=issue.creator,
+            assignee=issue.assignee,
+        ))
 
 
 @cli.group('sprint')

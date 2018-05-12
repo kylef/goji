@@ -40,6 +40,9 @@ class TestClient(object):
     def search(self, query):
         issue_7 = Issue('GOJI-7')
         issue_7.summary = 'My First Issue'
+        issue_7.description = 'One\nTwo\nThree\n'
+        issue_7.creator = User('kyle', 'Kyle Fuller')
+        issue_7.assignee = User('delisa', 'Delisa')
 
         return [
             issue_7
@@ -124,6 +127,41 @@ class SearchCommandTests(unittest.TestCase):
         result = runner.invoke(cli, args, obj=TestClient())
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'GOJI-7 My First Issue\n')
+
+    def test_search_format_key(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', '--format={key}', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'GOJI-7\n')
+
+    def test_search_format_summary(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', '--format={summary}', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'My First Issue\n')
+
+    def test_search_format_description(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', '--format={description}', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'One\nTwo\nThree\n\n')
+
+    def test_search_format_creator(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', '--format={creator}', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Kyle Fuller (kyle)\n')
+
+    def test_search_format_assignee(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'search', '--format={assignee}', 'PROJECT=GOJI']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Delisa (delisa)\n')
 
 
 class NewCommandTests(unittest.TestCase):
