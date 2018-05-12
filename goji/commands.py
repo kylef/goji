@@ -192,23 +192,28 @@ def change_status(client, issue_key, status):
         click.echo('There was an issue saving the new status as "{}"'.format(transition))
 
 
+@click.option('--message', '-m', help='Message to comment.')
 @click.argument('issue_key')
 @cli.command()
 @click.pass_obj
-def comment(client, issue_key):
+def comment(client, message, issue_key):
     """Comment on an issue"""
-    MARKER = '# Leave a comment on {}'.format(issue_key)
-    comment = click.edit(MARKER)
 
-    if comment is None or len(comment) == 0:
+    if not message:
+        MARKER = '# Leave a comment on {}'.format(issue_key)
+        message = click.edit(MARKER)
+
+    if message is None or len(message) == 0:
         return
 
     try:
-        client.comment(issue_key, comment)
+        client.comment(issue_key, message)
         click.echo('Comment created')
-    except Exception:
-        click.echo('Comment failed')
-        click.echo(comment)
+    except Exception as e:
+        click.echo('Comment:\n')
+        click.echo(message)
+        click.echo('')
+        raise e
 
 
 @click.argument('issue_key')
