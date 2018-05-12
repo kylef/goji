@@ -31,6 +31,19 @@ class ClientTests(unittest.TestCase):
                 'body': 'example',
             })
 
+    def test_post_404_error(self):
+        self.server.response.status_code = 404
+        self.server.response.body = {
+            'errors': {
+                'rapidViewId': 'The requested board cannot be viewed because it either does not exist or you do not have permission to view it.'
+            }
+        }
+
+        with self.assertRaises(JIRAException):
+            self.client.post('path', {
+                'body': 'example',
+            })
+
     def test_get_user(self):
         self.server.response.body = {
             'name': 'kyle',

@@ -60,7 +60,7 @@ class JIRAClient(object):
     # Methods
 
     def validate_response(self, response):
-        if response.status_code == 400:
+        if response.status_code >= 400 and 'application/json' in response.headers.get('Content-Type', ''):
             error = response.json()
             raise JIRAException(error.get('errorMessages', []), error.get('errors', {}))
 
@@ -146,4 +146,5 @@ class JIRAClient(object):
 
         url = urljoin(self.base_url, 'rest/agile/1.0/sprint')
         response = self.session.post(url, json=payload)
+        self.validate_response(response)
         return response.status_code == 201
