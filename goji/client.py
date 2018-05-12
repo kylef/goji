@@ -2,11 +2,25 @@ import os
 import pickle
 import json
 
+import click
 import requests
 from requests.compat import urljoin
 
 from goji.models import User, Issue, Transition
 from goji.auth import get_credentials
+
+
+class JIRAException(click.ClickException):
+    def __init__(self, error_messages, errors):
+        self.error_messages = error_messages
+        self.errors = errors
+
+    def show(self):
+        for error in self.error_messages:
+            click.echo(error)
+
+        for (key, error) in self.errors.items():
+            click.echo('- {}: {}'.format(key, error))
 
 
 class JIRAClient(object):
@@ -45,17 +59,28 @@ class JIRAClient(object):
 
     # Methods
 
+    def validate_response(self, response):
+        if response.status_code == 400:
+            error = response.json()
+            raise JIRAException(error.get('errorMessages', []), error.get('errors', {}))
+
     def get(self, path, **kwargs):
         url = urljoin(self.rest_base_url, path)
-        return self.session.get(url, **kwargs)
+        response = self.session.get(url, **kwargs)
+        self.validate_response(response)
+        return response
 
     def post(self, path, json):
         url = urljoin(self.rest_base_url, path)
-        return self.session.post(url, json=json)
+        response = self.session.post(url, json=json)
+        self.validate_response(response)
+        return response
 
     def put(self, path, json):
         url = urljoin(self.rest_base_url, path)
-        return self.session.put(url, json=json)
+        response = self.session.put(url, json=json)
+        self.validate_response(response)
+        return response
 
     @property
     def username(self):
