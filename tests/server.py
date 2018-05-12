@@ -104,6 +104,12 @@ class JIRAServer(object):
         self.thread.join()
         self.server.server_close()
 
+    def set_error_response(self, status_code, error):
+        self.response.status_code = status_code
+        self.response.body = {
+            'errorMessages': [error]
+        }
+
     def set_user_response(self):
         self.require_method = 'GET'
         self.require_path = '/rest/api/2/myself'
@@ -142,6 +148,21 @@ class JIRAServer(object):
         self.require_path = '/rest/api/2/issue/{}/assignee'.format(issue_key)
 
         self.response.status_code = 204
+
+    def set_comment_response(self, issue_key):
+        self.require_method = 'POST'
+        self.require_path = '/rest/api/2/issue/{}/comment'.format(issue_key)
+
+        self.response.status_code = 201
+        self.response.body = {
+            'id': '10000',
+            'author': {
+                'name': 'fred',
+                'displayName': 'Fred F. User',
+            },
+            'body': 'Hello World',
+            'created': '2018-05-08T05:54:42.688+0000',
+        }
 
     def set_search_response(self):
         self.require_method = 'POST'
