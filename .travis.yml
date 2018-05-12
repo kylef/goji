@@ -4,5 +4,8 @@ python:
   - '3.6'
 install:
   - pip install -e .
-script: python -m unittest discover
-
+  - pip install pytest-cov coveralls
+script:
+  - py.test --cov=goji
+after_success:
+  - coveralls
