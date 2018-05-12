@@ -130,7 +130,7 @@ class JIRAClient(object):
     def search(self, query):
         response = self.post('search', {'jql': query})
         response.raise_for_status()
-        return map(Issue.from_json, response.json()['issues'])
+        return list(map(Issue.from_json, response.json()['issues']))
 
     def create_sprint(self, board_id, name, start_date=None, end_date=None):
         payload = {

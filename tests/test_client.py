@@ -17,6 +17,8 @@ class ClientTests(unittest.TestCase):
 
     def setUp(self):
         self.client = JIRAClient(self.server.url)
+        self.server.response.status_code = 200
+        self.server.response.body = None
 
     def test_post_400_error(self):
         self.server.response.status_code = 400
@@ -114,6 +116,31 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(self.server.last_request.body, {
             'body': 'Hello World'
         })
+
+    def test_search(self):
+        self.server.response.body = {
+            'issues': [
+                {
+                    'key': 'GOJI-1',
+                    'fields': {
+                        'summary': 'Hello World',
+                        'status': {'name': 'open'}
+                    }
+                }
+            ],
+        }
+
+        issues = self.client.search('PROJECT = GOJI')
+
+        self.assertEqual(self.server.last_request.method, 'POST')
+        self.assertEqual(self.server.last_request.path,
+                         '/rest/api/2/search')
+        self.assertEqual(self.server.last_request.body, {
+            'jql': 'PROJECT = GOJI'
+        })
+
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0].key, 'GOJI-1')
 
     def test_create_sprint(self):
         self.server.response.status_code = 201
