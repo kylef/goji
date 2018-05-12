@@ -91,6 +91,16 @@ class ClientTests(unittest.TestCase):
             }
         })
 
+    def test_assign(self):
+        self.server.response.status_code = 204
+
+        self.client.assign('GOJI-14', 'kyle')
+
+        self.assertEqual(self.server.last_request.method, 'PUT')
+        self.assertEqual(self.server.last_request.path,
+                         '/rest/api/2/issue/GOJI-14/assignee')
+        self.assertEqual(self.server.last_request.body, {'name': 'kyle'})
+
     def test_comment(self):
         self.server.response.body = {
             'key': 'GOJI-14',
