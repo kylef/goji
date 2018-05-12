@@ -19,5 +19,3 @@ class UserTests(unittest.TestCase):
     def test_string_conversion(self):
         user = User(username='kyle', name='Kyle Fuller')
         self.assertEqual(str(user), 'Kyle Fuller (kyle)')
-
-

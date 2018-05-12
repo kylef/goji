@@ -1,6 +1,7 @@
 class Model(object):
     pass
 
+
 class User(Model):
     @classmethod
     def from_json(cls, json):
@@ -95,4 +96,3 @@ class Issue(object):
     summary
     description
 """
-

@@ -89,7 +89,7 @@ class ClientTests(unittest.TestCase):
 
         self.assertEqual(self.server.last_request.method, 'POST')
         self.assertEqual(self.server.last_request.path,
-            '/rest/api/2/issue/GOJI-14/comment')
+                         '/rest/api/2/issue/GOJI-14/comment')
         self.assertEqual(self.server.last_request.body, {
             'body': 'Hello World'
         })
@@ -109,7 +109,8 @@ class ClientTests(unittest.TestCase):
         self.server.response.status_code = 201
 
         self.client.create_sprint(5, 'Testing Sprint #1',
-            datetime.datetime(2018, 1, 1), datetime.datetime(2018, 6, 1))
+                                  datetime.datetime(2018, 1, 1),
+                                  datetime.datetime(2018, 6, 1))
 
         self.assertEqual(self.server.last_request.method, 'POST')
         self.assertEqual(self.server.last_request.path, '/rest/agile/1.0/sprint')
