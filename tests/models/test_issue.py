@@ -1,5 +1,5 @@
 import unittest
-from goji.models import Issue
+from goji.models import Issue, IssueLink, IssueLinkType
 
 
 class IssueTests(unittest.TestCase):
@@ -60,3 +60,71 @@ class IssueTests(unittest.TestCase):
     def test_string_conversion(self):
         issue = Issue(key='GOJI-1')
         self.assertEqual(str(issue), 'GOJI-1')
+
+
+class IssueLinkTests(unittest.TestCase):
+    def test_outward_issue_link_creation_from_json(self):
+        json = {
+            'type': {
+                'name': 'Relates',
+                'inward': 'related to',
+                'outward': 'relates to',
+            },
+            'outwardIssue': {
+                'key': 'GOJI-2',
+                'fields': {
+                    'summary': 'Hello world',
+                    'status': {
+                        'name': 'Open',
+                    },
+                }
+            }
+        }
+
+        link = IssueLink.from_json(json)
+
+        self.assertEqual(link.link_type.name, 'Relates')
+        self.assertEqual(link.link_type.inward, 'related to')
+        self.assertEqual(link.link_type.outward, 'relates to')
+        self.assertIsNone(link.inward_issue)
+        self.assertEqual(link.outward_issue.key, 'GOJI-2')
+
+    def test_inward_issue_link_creation_from_json(self):
+        json = {
+            'type': {
+                'name': 'Relates',
+                'inward': 'related to',
+                'outward': 'relates to',
+            },
+            'inwardIssue': {
+                'key': 'GOJI-2',
+                'fields': {
+                    'summary': 'Hello world',
+                    'status': {
+                        'name': 'Open',
+                    },
+                }
+            }
+        }
+
+        link = IssueLink.from_json(json)
+
+        self.assertEqual(link.link_type.name, 'Relates')
+        self.assertEqual(link.link_type.inward, 'related to')
+        self.assertEqual(link.link_type.outward, 'relates to')
+        self.assertIsNone(link.outward_issue)
+        self.assertEqual(link.inward_issue.key, 'GOJI-2')
+
+    def test_outward_string_conversion(self):
+        link = IssueLink(IssueLinkType('relates', 'related to', 'relates to'))
+        link.outward_issue = Issue('GOJI-15')
+        link.outward_issue.status = 'Open'
+
+        self.assertEqual(str(link), 'Relates to: GOJI-15 (Open)')
+
+    def test_inward_string_conversion(self):
+        link = IssueLink(IssueLinkType('relates', 'related to', 'relates to'))
+        link.inward_issue = Issue('GOJI-15')
+        link.inward_issue.status = 'Open'
+
+        self.assertEqual(str(link), 'Related to: GOJI-15 (Open)')

@@ -57,17 +57,30 @@ class IssueLink(Model):
     @classmethod
     def from_json(cls, json):
         link_type = IssueLinkType.from_json(json['type'])
+        issue_link = cls(link_type)
+
         if 'outwardIssue' in json:
-            return cls(link_type, Issue.from_json(json['outwardIssue']))
+            issue_link.outward_issue = Issue.from_json(json['outwardIssue'])
 
-        return cls(link_type, Issue.from_json(json['inwardIssue']))
+        if 'inwardIssue' in json:
+            issue_link.inward_issue = Issue.from_json(json['inwardIssue'])
 
-    def __init__(self, link_type, outward_issue):
+        return issue_link
+
+    def __init__(self, link_type, inward_issue=None, outward_issue=None):
         self.link_type = link_type
+        self.inward_issue = inward_issue
         self.outward_issue = outward_issue
 
     def __str__(self):
-        pass
+        if self.outward_issue:
+            direction = self.link_type.outward.capitalize()
+            issue = self.outward_issue
+        elif self.inward_issue:
+            direction = self.link_type.inward.capitalize()
+            issue = self.inward_issue
+
+        return '{direction}: {issue.key} ({issue.status})'.format(direction=direction, issue=issue)
 
 
 class Transition(Model):
