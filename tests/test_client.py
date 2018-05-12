@@ -119,10 +119,19 @@ class ClientTests(unittest.TestCase):
 
     def test_comment(self):
         self.server.response.body = {
-            'key': 'GOJI-14',
+            'id': '10000',
+            'author': {
+                'name': 'fred',
+                'displayName': 'Fred F. User',
+            },
+            'body': 'Hello World',
+            'created': '2018-05-08T05:54:42.688+0000',
         }
 
-        self.client.comment('GOJI-14', 'Hello World')
+        comment = self.client.comment('GOJI-14', 'Hello World')
+
+        self.assertEqual(comment.message, 'Hello World')
+        self.assertEqual(comment.author.name, 'Fred F. User')
 
         self.assertEqual(self.server.last_request.method, 'POST')
         self.assertEqual(self.server.last_request.path,

@@ -96,6 +96,25 @@ class Transition(Model):
         return self.name
 
 
+class Comment(Model):
+    @classmethod
+    def from_json(cls, json):
+        comment = cls(json['id'], json['body'])
+
+        if 'author' in json:
+            comment.author = User.from_json(json['author'])
+
+        return comment
+
+    def __init__(self, identifier, message):
+        self.id = identifier
+        self.message = message
+        self.author = None
+
+    def __str__(self):
+        return self.message
+
+
 class Sprint(Model):
     @classmethod
     def from_json(cls, json):

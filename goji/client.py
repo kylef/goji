@@ -6,7 +6,7 @@ import click
 import requests
 from requests.compat import urljoin
 
-from goji.models import User, Issue, Transition, Sprint
+from goji.models import User, Issue, Transition, Sprint, Comment
 from goji.auth import get_credentials
 
 
@@ -125,7 +125,7 @@ class JIRAClient(object):
 
     def comment(self, issue_key, comment):
         response = self.post('issue/%s/comment' % issue_key, {'body': comment})
-        return (response.status_code == 201) or (response.status_code == 200)
+        return Comment.from_json(response.json())
 
     def search(self, query):
         response = self.post('search', {'jql': query})

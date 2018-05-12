@@ -200,9 +200,13 @@ def comment(client, issue_key):
     MARKER = '# Leave a comment on {}'.format(issue_key)
     comment = click.edit(MARKER)
 
-    if comment is not None and client.comment(issue_key, comment):
+    if comment is None or len(comment) == 0:
+        return
+
+    try:
+        client.comment(issue_key, comment)
         click.echo('Comment created')
-    else:
+    except Exception:
         click.echo('Comment failed')
         click.echo(comment)
 
