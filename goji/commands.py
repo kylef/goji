@@ -302,9 +302,6 @@ def sprint():
 @click.pass_obj
 def sprint_create(client, board_id, name, start_date, end_date):
     """Create a sprint"""
-    created = client.create_sprint(board_id, name, start_date=start_date, end_date=end_date)
 
-    if created:
-        click.echo('Sprint created')
-    else:
-        click.echo('Sprint not created')
+    sprint = client.create_sprint(board_id, name, start_date=start_date, end_date=end_date)
+    click.echo('Sprint created')

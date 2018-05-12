@@ -95,6 +95,21 @@ class Transition(Model):
     def __str__(self):
         return self.name
 
+
+class Sprint(Model):
+    @classmethod
+    def from_json(cls, json):
+        return cls(json['id'], json['name'], json['state'])
+
+    def __init__(self, identifier, name, state):
+        self.id = identifier
+        self.name = name
+        self.state = state
+
+    def __str__(self):
+        return self.name
+
+
 """
 class IssueType(object):
     id

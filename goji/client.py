@@ -6,7 +6,7 @@ import click
 import requests
 from requests.compat import urljoin
 
-from goji.models import User, Issue, Transition
+from goji.models import User, Issue, Transition, Sprint
 from goji.auth import get_credentials
 
 
@@ -147,4 +147,4 @@ class JIRAClient(object):
         url = urljoin(self.base_url, 'rest/agile/1.0/sprint')
         response = self.session.post(url, json=payload)
         self.validate_response(response)
-        return response.status_code == 201
+        return Sprint.from_json(response.json())
