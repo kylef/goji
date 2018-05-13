@@ -10,7 +10,9 @@ setup(
     author_email='kyle@fuller.li',
     packages=('goji',),
     install_requires=(
-        'requests', 'requests-html', 'Click', 'click-datetime', 'six'
+        'requests', 'requests[socks]', 'requests-html',
+        'Click', 'click-datetime',
+        'six'
     ),
     entry_points={
         'console_scripts': (
