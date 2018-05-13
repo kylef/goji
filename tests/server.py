@@ -47,6 +47,12 @@ class JIRAServer(object):
                 handler.handle_request('PUT')
 
             def handle_request(handler, method):
+                if self.require_method and method != self.require_method:
+                    raise Exception('Client called incorrect method')
+
+                if self.require_path and handler.path != self.require_path:
+                    raise Exception('Client called incorrect path: ' + handler.path)
+
                 if 'Content-Length' in handler.headers and \
                         handler.headers['Content-Type'] == 'application/json':
                     length = int(handler.headers['Content-Length'])
@@ -97,3 +103,14 @@ class JIRAServer(object):
         self.server.shutdown()
         self.thread.join()
         self.server.server_close()
+
+    def set_user_response(self):
+        self.require_method = 'GET'
+        self.require_path = '/rest/api/2/myself'
+
+        self.response.status_code = 200
+        self.response.body = {
+            'name': 'kyle',
+            'displayName': 'Kyle Fuller',
+            'emailAddress': 'kyle@example.com',
+        }

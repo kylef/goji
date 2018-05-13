@@ -3,16 +3,16 @@ import os
 
 from click.testing import CliRunner
 
+from goji.client import JIRAClient
 from goji.commands import cli
 from goji.models import User, Issue, Transition, Issue
+
+from tests.server import ServerTestCase
 
 
 class TestClient(object):
     base_url = 'https://goji.example.com/'
     username = 'kyle'
-
-    def get_user(self):
-        return User('kyle', 'Kyle Fuller')
 
     def get_issue(self, issue_key):
         issue = Issue(issue_key)
@@ -48,6 +48,14 @@ class TestClient(object):
 
     def assign(self, issue_key, user):
         return True
+
+
+class CommandTestCase(ServerTestCase):
+    def invoke(self, *args):
+        runner = CliRunner()
+        args = ['--base-url', self.server.url] + list(args)
+        result = runner.invoke(cli, args, obj=JIRAClient(self.server.url))
+        return result
 
 
 class CLITests(unittest.TestCase):
@@ -103,12 +111,14 @@ class UnassignCommandTests(unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
 
 
-class WhoamiCommandTests(unittest.TestCase):
+class WhoamiCommandTests(CommandTestCase):
     def test_whoami(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'whoami'], obj=TestClient())
+        self.server.set_user_response()
 
-        self.assertTrue('Kyle Fuller (kyle)' in result.output)
+        result = self.invoke('whoami')
+
+        self.assertIsNone(result.exception)
+        self.assertTrue(result.output, 'Kyle Fuller (kyle)\n')
         self.assertEqual(result.exit_code, 0)
 
 
