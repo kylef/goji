@@ -6,6 +6,7 @@
 
 - `goji search` accepts a format string to render the results. You can pass
   `--format` with a custom format for example `{key}`.
+- `goji comment` can accept a comment message via `--message` or `-m` options.
 
 ### Bug Fixes
 
