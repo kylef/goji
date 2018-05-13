@@ -3,26 +3,16 @@ import os
 
 from click.testing import CliRunner
 
+from goji.client import JIRAClient
 from goji.commands import cli
 from goji.models import User, Issue, Transition, Issue
+
+from tests.server import ServerTestCase
 
 
 class TestClient(object):
     base_url = 'https://goji.example.com/'
     username = 'kyle'
-
-    def get_user(self):
-        return User('kyle', 'Kyle Fuller')
-
-    def get_issue(self, issue_key):
-        issue = Issue(issue_key)
-        issue.summary = 'Example issue'
-        issue.description = None
-        issue.status = 'Open'
-        issue.creator = 'kyle'
-        issue.assignee = 'kyle'
-        issue.links = []
-        return issue
 
     def get_issue_transitions(self, issue_key):
         if issue_key == 'invalid':
@@ -35,19 +25,14 @@ class TestClient(object):
     def change_status(self, issue_key, transition_id):
         return True
 
-    def search(self, query):
-        issue_7 = Issue('GOJI-7')
-        issue_7.summary = 'My First Issue'
-        issue_7.description = 'One\nTwo\nThree\n'
-        issue_7.creator = User('kyle', 'Kyle Fuller')
-        issue_7.assignee = User('delisa', 'Delisa')
 
-        return [
-            issue_7
-        ]
-
-    def assign(self, issue_key, user):
-        return True
+class CommandTestCase(ServerTestCase):
+    def invoke(self, *args):
+        runner = CliRunner()
+        args = ['--base-url', self.server.url] + list(args)
+        client = JIRAClient(self.server.url, ('kyle', None))
+        result = runner.invoke(cli, args, obj=client)
+        return result
 
 
 class CLITests(unittest.TestCase):
@@ -59,56 +44,81 @@ class CLITests(unittest.TestCase):
         self.assertNotEqual(result.exit_code, 0)
 
 
-class ShowCommandTests(unittest.TestCase):
+class ShowCommandTests(CommandTestCase):
     def test_show__without_issue_key(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'show'], obj=TestClient())
+        result = self.invoke('show')
 
         self.assertTrue('Error: Missing argument "issue_key"' in result.output)
         self.assertNotEqual(result.exit_code, 0)
 
     def test_show_with_issue_key(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'show', 'XX-123'], obj=TestClient())
+        self.server.set_issue_response()
 
-        self.assertEqual(result.output, '-> XX-123\n  Example issue\n\n  - Status: Open\n  - Creator: kyle\n  - Assigned: kyle\n  - URL: https://goji.example.com/browse/XX-123\n')
+        result = self.invoke('show', 'GOJI-1')
+        output = result.output.replace(self.server.url, 'https://example.com')
+
+        print(result.output)
+
+        expected = '''-> GOJI-1
+  Example Issue
+
+  Issue Description
+
+  - Status: Open
+  - Creator: Kyle Fuller (kyle)
+  - Assigned: Delisa (delisa)
+  - URL: https://example.com/browse/GOJI-1
+'''
+
+        self.assertEqual(output, expected)
         self.assertEqual(result.exit_code, 0)
 
 
-class AssignCommandTests(unittest.TestCase):
+class AssignCommandTests(CommandTestCase):
     def test_assign_specified_user(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'assign', 'GOJI-123', 'jones'], obj=TestClient())
+        self.server.set_assign_response('GOJI-123')
+
+        result = self.invoke('assign', 'GOJI-123', 'jones')
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Okay, GOJI-123 has been assigned to jones.\n')
         self.assertEqual(result.exit_code, 0)
 
+        self.assertEqual(self.server.last_request.body, {'name': 'jones'})
+
     def test_assign_current_user(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'assign', 'GOJI-123'], obj=TestClient())
+        self.server.set_assign_response('GOJI-123')
+
+        result = self.invoke('assign', 'GOJI-123')
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Okay, GOJI-123 has been assigned to kyle.\n')
         self.assertEqual(result.exit_code, 0)
 
+        self.assertEqual(self.server.last_request.body, {'name': 'kyle'})
 
-class UnassignCommandTests(unittest.TestCase):
+
+class UnassignCommandTests(CommandTestCase):
     def test_unassign(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'unassign', 'GOJI-123'], obj=TestClient())
+        self.server.set_assign_response('GOJI-123')
+
+        result = self.invoke('unassign', 'GOJI-123')
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'GOJI-123 has been unassigned.\n')
         self.assertEqual(result.exit_code, 0)
 
+        self.assertEqual(self.server.last_request.body, {'name': None})
 
-class WhoamiCommandTests(unittest.TestCase):
+
+class WhoamiCommandTests(CommandTestCase):
     def test_whoami(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'whoami'], obj=TestClient())
+        self.server.set_user_response()
 
-        self.assertTrue('Kyle Fuller (kyle)' in result.output)
+        result = self.invoke('whoami')
+
+        self.assertIsNone(result.exception)
+        self.assertTrue(result.output, 'Kyle Fuller (kyle)\n')
         self.assertEqual(result.exit_code, 0)
 
 
@@ -149,48 +159,60 @@ class ChangeStatusCommandTests(unittest.TestCase):
         self.assertEqual(result.output, 'Fetching possible transitions...\nOkay, the status for GOJI-311 is now "Done".\n')
 
 
-class SearchCommandTests(unittest.TestCase):
+class SearchCommandTests(CommandTestCase):
     def test_search(self):
-        runner = CliRunner()
-        args = ['--base-url=https://example.com', 'search', 'PROJECT=GOJI']
-        result = runner.invoke(cli, args, obj=TestClient())
+        self.server.set_search_response()
+
+        result = self.invoke('search', 'PROJECT=GOJI')
+
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'GOJI-7 My First Issue\n')
+        self.assertEqual(result.exit_code, 0)
 
     def test_search_format_key(self):
-        runner = CliRunner()
-        args = ['--base-url=https://example.com', 'search', '--format={key}', 'PROJECT=GOJI']
-        result = runner.invoke(cli, args, obj=TestClient())
+        self.server.set_search_response()
+
+        result = self.invoke('search', '--format', '{key}', 'PROJECT=GOJI')
+
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'GOJI-7\n')
+        self.assertEqual(result.exit_code, 0)
 
     def test_search_format_summary(self):
-        runner = CliRunner()
-        args = ['--base-url=https://example.com', 'search', '--format={summary}', 'PROJECT=GOJI']
-        result = runner.invoke(cli, args, obj=TestClient())
+        self.server.set_search_response()
+
+        result = self.invoke('search', '--format', '{summary}', 'PROJECT=GOJI')
+
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'My First Issue\n')
+        self.assertEqual(result.exit_code, 0)
 
     def test_search_format_description(self):
-        runner = CliRunner()
-        args = ['--base-url=https://example.com', 'search', '--format={description}', 'PROJECT=GOJI']
-        result = runner.invoke(cli, args, obj=TestClient())
+        self.server.set_search_response()
+
+        result = self.invoke('search', '--format', '{description}', 'PROJECT=GOJI')
+
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'One\nTwo\nThree\n\n')
+        self.assertEqual(result.exit_code, 0)
 
     def test_search_format_creator(self):
-        runner = CliRunner()
-        args = ['--base-url=https://example.com', 'search', '--format={creator}', 'PROJECT=GOJI']
-        result = runner.invoke(cli, args, obj=TestClient())
+        self.server.set_search_response()
+
+        result = self.invoke('search', '--format', '{creator}', 'PROJECT=GOJI')
+
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Kyle Fuller (kyle)\n')
+        self.assertEqual(result.exit_code, 0)
 
     def test_search_format_assignee(self):
-        runner = CliRunner()
-        args = ['--base-url=https://example.com', 'search', '--format={assignee}', 'PROJECT=GOJI']
-        result = runner.invoke(cli, args, obj=TestClient())
+        self.server.set_search_response()
+
+        result = self.invoke('search', '--format', '{assignee}', 'PROJECT=GOJI')
+
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Delisa (delisa)\n')
+        self.assertEqual(result.exit_code, 0)
 
 
 class NewCommandTests(unittest.TestCase):

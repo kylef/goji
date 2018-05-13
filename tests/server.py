@@ -1,7 +1,21 @@
+import unittest
 import json
 from threading import Thread
 
 from six.moves import BaseHTTPServer
+
+
+class ServerTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.server = JIRAServer()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.server.shutdown()
+
+    def setUp(self):
+        self.server.reset()
 
 
 class Request(object):
@@ -20,8 +34,7 @@ class Response(object):
 
 class JIRAServer(object):
     def __init__(self):
-        self.requests = []
-        self.response = Response(200, None)
+        self.reset()
 
         class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
             def do_GET(handler):
@@ -34,6 +47,12 @@ class JIRAServer(object):
                 handler.handle_request('PUT')
 
             def handle_request(handler, method):
+                if self.require_method and method != self.require_method:
+                    raise Exception('Client called incorrect method')
+
+                if self.require_path and handler.path != self.require_path:
+                    raise Exception('Client called incorrect path: ' + handler.path)
+
                 if 'Content-Length' in handler.headers and \
                         handler.headers['Content-Type'] == 'application/json':
                     length = int(handler.headers['Content-Length'])
@@ -74,7 +93,78 @@ class JIRAServer(object):
     def last_request(self):
         return self.requests[-1]
 
+    def reset(self):
+        self.requests = []
+        self.response = Response(200, None)
+        self.require_method = None
+        self.require_path = None
+
     def shutdown(self):
         self.server.shutdown()
         self.thread.join()
         self.server.server_close()
+
+    def set_user_response(self):
+        self.require_method = 'GET'
+        self.require_path = '/rest/api/2/myself'
+
+        self.response.status_code = 200
+        self.response.body = {
+            'name': 'kyle',
+            'displayName': 'Kyle Fuller',
+            'emailAddress': 'kyle@example.com',
+        }
+
+    def set_issue_response(self, issue_key='GOJI-1'):
+        self.require_method = 'GET'
+        self.require_path = '/rest/api/2/issue/{}'.format(issue_key)
+
+        self.response.status_code = 200
+        self.response.body = {
+            'key': issue_key,
+            'fields': {
+                'summary': 'Example Issue',
+                'description': 'Issue Description',
+                'status': {'name': 'Open'},
+                'creator': {
+                    'displayName': 'Kyle Fuller',
+                    'name': 'kyle'
+                },
+                'assignee': {
+                    'displayName': 'Delisa',
+                    'name': 'delisa'
+                }
+            }
+        }
+
+    def set_assign_response(self, issue_key):
+        self.require_method = 'PUT'
+        self.require_path = '/rest/api/2/issue/{}/assignee'.format(issue_key)
+
+        self.response.status_code = 204
+
+    def set_search_response(self):
+        self.require_method = 'POST'
+        self.require_path = '/rest/api/2/search'
+
+        self.response.status_code = 200
+        self.response.body = {
+            'issues': [
+                {
+                    'key': 'GOJI-7',
+                    'fields': {
+                        'summary': 'My First Issue',
+                        'description': 'One\nTwo\nThree\n',
+                        'status': {'name': 'open'},
+                        'creator': {
+                            'displayName': 'Kyle Fuller',
+                            'name': 'kyle'
+                        },
+                        'assignee': {
+                            'displayName': 'Delisa',
+                            'name': 'delisa'
+                        }
+                    }
+                }
+            ]
+        }
