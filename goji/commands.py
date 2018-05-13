@@ -137,13 +137,12 @@ def show(client, issue_key):
 @click.pass_obj
 def assign(client, issue_key, user):
     """Assign an issue to a user"""
+
     if user is None:
         user = client.username
 
-    if client.assign(issue_key, user):
-        click.echo('Okay, {} has been assigned to {}.'.format(issue_key, user))
-    else:
-        click.echo('There was a problem assigning {} to {}.'.format(issue_key, user))
+    client.assign(issue_key, user)
+    click.echo('{} has been assigned to {}.'.format(issue_key, user))
 
 
 @click.argument('issue_key')
@@ -151,10 +150,9 @@ def assign(client, issue_key, user):
 @click.pass_obj
 def unassign(client, issue_key):
     """Unassign an issue"""
-    if client.assign(issue_key, None):
-        click.echo('{} has been unassigned.'.format(issue_key))
-    else:
-        click.echo('There was a problem unassigning {}.'.format(issue_key))
+
+    client.assign(issue_key, None)
+    click.echo('{} has been unassigned.'.format(issue_key))
 
 
 @click.argument('status', required=False)

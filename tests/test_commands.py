@@ -81,7 +81,7 @@ class AssignCommandTests(CommandTestCase):
         result = self.invoke('assign', 'GOJI-123', 'jones')
 
         self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Okay, GOJI-123 has been assigned to jones.\n')
+        self.assertEqual(result.output, 'GOJI-123 has been assigned to jones.\n')
         self.assertEqual(result.exit_code, 0)
 
         self.assertEqual(self.server.last_request.body, {'name': 'jones'})
@@ -92,7 +92,7 @@ class AssignCommandTests(CommandTestCase):
         result = self.invoke('assign', 'GOJI-123')
 
         self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Okay, GOJI-123 has been assigned to kyle.\n')
+        self.assertEqual(result.output, 'GOJI-123 has been assigned to kyle.\n')
         self.assertEqual(result.exit_code, 0)
 
         self.assertEqual(self.server.last_request.body, {'name': 'kyle'})

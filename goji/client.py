@@ -117,7 +117,6 @@ class JIRAClient(object):
 
     def assign(self, issue_key, name):
         response = self.put('issue/%s/assignee' % issue_key, {'name': name})
-        return (response.status_code == 204) or (response.status_code == 200)
 
     def comment(self, issue_key, comment):
         response = self.post('issue/%s/comment' % issue_key, {'body': comment})
