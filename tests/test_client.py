@@ -3,22 +3,13 @@ import datetime
 
 from goji.client import JIRAClient, JIRAException
 
-from tests.server import JIRAServer
+from tests.server import ServerTestCase
 
 
-class ClientTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.server = JIRAServer()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.server.shutdown()
-
+class ClientTests(ServerTestCase):
     def setUp(self):
+        super(ClientTests, self).setUp()
         self.client = JIRAClient(self.server.url)
-        self.server.response.status_code = 200
-        self.server.response.body = None
 
     def test_post_400_error(self):
         self.server.response.status_code = 400

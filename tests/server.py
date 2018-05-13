@@ -1,7 +1,21 @@
+import unittest
 import json
 from threading import Thread
 
 from six.moves import BaseHTTPServer
+
+
+class ServerTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.server = JIRAServer()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.server.shutdown()
+
+    def setUp(self):
+        self.server.reset()
 
 
 class Request(object):
@@ -20,8 +34,7 @@ class Response(object):
 
 class JIRAServer(object):
     def __init__(self):
-        self.requests = []
-        self.response = Response(200, None)
+        self.reset()
 
         class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
             def do_GET(handler):
@@ -73,6 +86,12 @@ class JIRAServer(object):
     @property
     def last_request(self):
         return self.requests[-1]
+
+    def reset(self):
+        self.requests = []
+        self.response = Response(200, None)
+        self.require_method = None
+        self.require_path = None
 
     def shutdown(self):
         self.server.shutdown()
