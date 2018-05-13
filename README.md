@@ -36,6 +36,21 @@ $ goji login
 
 ## Usage
 
+Subcommands:
+
+- [login](#login) - Authenticate with JIRA server
+- [whoami](#whoami) - View information regarding current user
+- [show](#show) - Show details about issue
+- create - Create a new issue
+- [assign](#assign) - Assign an issue to a user
+- [unassign](#unassign) - Unassign a user from an issue
+- [comment](#comment) - Comment on an issue
+- [change-status](#change-status) - Change the status of an issue
+- edit - Edit issue description
+- [open](#open) - Open issue in a web browser
+- [search](#search) - Search issues using JQL
+- [sprint](#sprint) - Collection of commands to manage sprints
+
 ### login
 
 Authenticate with a JIRA server.
@@ -124,6 +139,10 @@ Fetching possible transitions...
 Select a transition: 1
 Okay, the status for GOJI-311 is now "In Progress".
 ```
+
+### sprint
+
+- create - Create a sprint
 
 ## License
 
