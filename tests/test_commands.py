@@ -246,3 +246,14 @@ class NewCommandTests(unittest.TestCase):
 
     def test_new_specify_type(self):
         pass
+
+
+class CreateSprintTests(CommentCommandTests):
+    def test_creating_sprint(self):
+        self.server.set_create_sprint_response()
+
+        result = self.invoke('sprint', 'create', '1', 'Sprint #1')
+
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Sprint created\n')
+        self.assertEqual(result.exit_code, 0)

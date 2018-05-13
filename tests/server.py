@@ -189,3 +189,14 @@ class JIRAServer(object):
                 }
             ]
         }
+
+    def set_create_sprint_response(self):
+        self.require_method = 'POST'
+        self.require_path = '/rest/agile/1.0/sprint'
+
+        self.response.status_code = 201
+        self.response.body = {
+            'id': 12,
+            'name': 'Sprint #1',
+            'state': 'future',
+        }
