@@ -114,3 +114,9 @@ class JIRAServer(object):
             'displayName': 'Kyle Fuller',
             'emailAddress': 'kyle@example.com',
         }
+
+    def set_assign_response(self, issue_key):
+        self.require_method = 'PUT'
+        self.require_path = '/rest/api/2/issue/{}/assignee'.format(issue_key)
+
+        self.response.status_code = 204

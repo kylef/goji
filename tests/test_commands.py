@@ -46,15 +46,13 @@ class TestClient(object):
             issue_7
         ]
 
-    def assign(self, issue_key, user):
-        return True
-
 
 class CommandTestCase(ServerTestCase):
     def invoke(self, *args):
         runner = CliRunner()
         args = ['--base-url', self.server.url] + list(args)
-        result = runner.invoke(cli, args, obj=JIRAClient(self.server.url))
+        client = JIRAClient(self.server.url, ('kyle', None))
+        result = runner.invoke(cli, args, obj=client)
         return result
 
 
@@ -83,32 +81,41 @@ class ShowCommandTests(unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
 
 
-class AssignCommandTests(unittest.TestCase):
+class AssignCommandTests(CommandTestCase):
     def test_assign_specified_user(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'assign', 'GOJI-123', 'jones'], obj=TestClient())
+        self.server.set_assign_response('GOJI-123')
+
+        result = self.invoke('assign', 'GOJI-123', 'jones')
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Okay, GOJI-123 has been assigned to jones.\n')
         self.assertEqual(result.exit_code, 0)
 
+        self.assertEqual(self.server.last_request.body, {'name': 'jones'})
+
     def test_assign_current_user(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'assign', 'GOJI-123'], obj=TestClient())
+        self.server.set_assign_response('GOJI-123')
+
+        result = self.invoke('assign', 'GOJI-123')
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Okay, GOJI-123 has been assigned to kyle.\n')
         self.assertEqual(result.exit_code, 0)
 
+        self.assertEqual(self.server.last_request.body, {'name': 'kyle'})
 
-class UnassignCommandTests(unittest.TestCase):
+
+class UnassignCommandTests(CommandTestCase):
     def test_unassign(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'unassign', 'GOJI-123'], obj=TestClient())
+        self.server.set_assign_response('GOJI-123')
+
+        result = self.invoke('unassign', 'GOJI-123')
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'GOJI-123 has been unassigned.\n')
         self.assertEqual(result.exit_code, 0)
+
+        self.assertEqual(self.server.last_request.body, {'name': None})
 
 
 class WhoamiCommandTests(CommandTestCase):
