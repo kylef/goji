@@ -7,9 +7,6 @@ class IssueTests(unittest.TestCase):
         json = {
             'key': 'GOJI-1',
             'fields': {
-                'status': {
-                    'name': 'closed'
-                },
                 'summary': 'Issue Summary',
                 'description': 'An awesome issue description',
                 'creator': {
@@ -21,6 +18,7 @@ class IssueTests(unittest.TestCase):
                     'displayName': 'Kyle Fuller',
                 },
                 'status': {
+                    'id': 2,
                     'name': 'To Do',
                 },
                 'issuelinks': [
@@ -35,6 +33,7 @@ class IssueTests(unittest.TestCase):
                             'fields': {
                                 'summary': 'Hello world',
                                 'status': {
+                                    'id': 1,
                                     'name': 'Open',
                                 },
                             }
@@ -51,7 +50,7 @@ class IssueTests(unittest.TestCase):
         self.assertEqual(issue.description, 'An awesome issue description')
         self.assertEqual(issue.creator.username, 'kyle')
         self.assertEqual(issue.assignee.username, 'kyle')
-        self.assertEqual(issue.status, 'To Do')
+        self.assertEqual(issue.status.name, 'To Do')
         self.assertEqual(issue.links[0].outward_issue.key, 'GOJI-2')
         self.assertEqual(issue.links[0].link_type.name, 'Relates')
         self.assertEqual(issue.links[0].link_type.inward, 'related to')
@@ -75,6 +74,7 @@ class IssueLinkTests(unittest.TestCase):
                 'fields': {
                     'summary': 'Hello world',
                     'status': {
+                        'id': 1,
                         'name': 'Open',
                     },
                 }
@@ -101,6 +101,7 @@ class IssueLinkTests(unittest.TestCase):
                 'fields': {
                     'summary': 'Hello world',
                     'status': {
+                        'id': 1,
                         'name': 'Open',
                     },
                 }

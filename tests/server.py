@@ -131,7 +131,10 @@ class JIRAServer(object):
             'fields': {
                 'summary': 'Example Issue',
                 'description': 'Issue Description',
-                'status': {'name': 'Open'},
+                'status': {
+                    'id': 1,
+                    'name': 'Open'
+                },
                 'creator': {
                     'displayName': 'Kyle Fuller',
                     'name': 'kyle'
@@ -176,7 +179,10 @@ class JIRAServer(object):
                     'fields': {
                         'summary': 'My First Issue',
                         'description': 'One\nTwo\nThree\n',
-                        'status': {'name': 'open'},
+                        'status': {
+                            'id': 1,
+                            'name': 'open'
+                        },
                         'creator': {
                             'displayName': 'Kyle Fuller',
                             'name': 'kyle'

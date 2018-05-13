@@ -28,7 +28,7 @@ class Issue(Model):
             issue.description = fields.get('description')
             issue.creator = User.from_json(fields.get('creator'))
             issue.assignee = User.from_json(fields.get('assignee'))
-            issue.status = fields['status']['name']
+            issue.status = Status.from_json(fields['status'])
 
             links = []
             if 'issuelinks' in fields:
@@ -131,6 +131,20 @@ class Sprint(Model):
         self.id = identifier
         self.name = name
         self.state = state
+
+    def __str__(self):
+        return self.name
+
+
+class Status(Model):
+    @classmethod
+    def from_json(cls, json):
+        return cls(json['id'], json['name'], json.get('description', None))
+
+    def __init__(self, identifier, name, description):
+        self.id = identifier
+        self.name = name
+        self.description = description
 
     def __str__(self):
         return self.name

@@ -56,6 +56,7 @@ class ClientTests(ServerTestCase):
             'fields': {
                 'summary': 'Implement Client Unit Tests',
                 'status': {
+                    'id': 1,
                     'name': 'open',
                 }
             },
@@ -142,7 +143,10 @@ class ClientTests(ServerTestCase):
                     'fields': {
                         'summary': 'Hello World',
                         'description': 'One\nTwo\nThree\n',
-                        'status': {'name': 'open'},
+                        'status': {
+                            'id': 1,
+                            'name': 'open'
+                        },
                     }
                 }
             ],
