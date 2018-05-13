@@ -141,7 +141,8 @@ class ClientTests(ServerTestCase):
                     'key': 'GOJI-1',
                     'fields': {
                         'summary': 'Hello World',
-                        'status': {'name': 'open'}
+                        'description': 'One\nTwo\nThree\n',
+                        'status': {'name': 'open'},
                     }
                 }
             ],

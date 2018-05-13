@@ -120,3 +120,29 @@ class JIRAServer(object):
         self.require_path = '/rest/api/2/issue/{}/assignee'.format(issue_key)
 
         self.response.status_code = 204
+
+    def set_search_response(self):
+        self.require_method = 'POST'
+        self.require_path = '/rest/api/2/search'
+
+        self.response.status_code = 200
+        self.response.body = {
+            'issues': [
+                {
+                    'key': 'GOJI-7',
+                    'fields': {
+                        'summary': 'My First Issue',
+                        'description': 'One\nTwo\nThree\n',
+                        'status': {'name': 'open'},
+                        'creator': {
+                            'displayName': 'Kyle Fuller',
+                            'name': 'kyle'
+                        },
+                        'assignee': {
+                            'displayName': 'Delisa',
+                            'name': 'delisa'
+                        }
+                    }
+                }
+            ]
+        }
