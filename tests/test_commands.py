@@ -14,16 +14,6 @@ class TestClient(object):
     base_url = 'https://goji.example.com/'
     username = 'kyle'
 
-    def get_issue(self, issue_key):
-        issue = Issue(issue_key)
-        issue.summary = 'Example issue'
-        issue.description = None
-        issue.status = 'Open'
-        issue.creator = 'kyle'
-        issue.assignee = 'kyle'
-        issue.links = []
-        return issue
-
     def get_issue_transitions(self, issue_key):
         if issue_key == 'invalid':
             return []
@@ -54,19 +44,33 @@ class CLITests(unittest.TestCase):
         self.assertNotEqual(result.exit_code, 0)
 
 
-class ShowCommandTests(unittest.TestCase):
+class ShowCommandTests(CommandTestCase):
     def test_show__without_issue_key(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'show'], obj=TestClient())
+        result = self.invoke('show')
 
         self.assertTrue('Error: Missing argument "issue_key"' in result.output)
         self.assertNotEqual(result.exit_code, 0)
 
     def test_show_with_issue_key(self):
-        runner = CliRunner()
-        result = runner.invoke(cli, ['--base-url=https://example.com', 'show', 'XX-123'], obj=TestClient())
+        self.server.set_issue_response()
 
-        self.assertEqual(result.output, '-> XX-123\n  Example issue\n\n  - Status: Open\n  - Creator: kyle\n  - Assigned: kyle\n  - URL: https://goji.example.com/browse/XX-123\n')
+        result = self.invoke('show', 'GOJI-1')
+        output = result.output.replace(self.server.url, 'https://example.com')
+
+        print(result.output)
+
+        expected = '''-> GOJI-1
+  Example Issue
+
+  Issue Description
+
+  - Status: Open
+  - Creator: Kyle Fuller (kyle)
+  - Assigned: Delisa (delisa)
+  - URL: https://example.com/browse/GOJI-1
+'''
+
+        self.assertEqual(output, expected)
         self.assertEqual(result.exit_code, 0)
 
 

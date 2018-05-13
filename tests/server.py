@@ -115,6 +115,28 @@ class JIRAServer(object):
             'emailAddress': 'kyle@example.com',
         }
 
+    def set_issue_response(self, issue_key='GOJI-1'):
+        self.require_method = 'GET'
+        self.require_path = '/rest/api/2/issue/{}'.format(issue_key)
+
+        self.response.status_code = 200
+        self.response.body = {
+            'key': issue_key,
+            'fields': {
+                'summary': 'Example Issue',
+                'description': 'Issue Description',
+                'status': {'name': 'Open'},
+                'creator': {
+                    'displayName': 'Kyle Fuller',
+                    'name': 'kyle'
+                },
+                'assignee': {
+                    'displayName': 'Delisa',
+                    'name': 'delisa'
+                }
+            }
+        }
+
     def set_assign_response(self, issue_key):
         self.require_method = 'PUT'
         self.require_path = '/rest/api/2/issue/{}/assignee'.format(issue_key)
