@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='goji',
-    version='0.2.1',
+    version='0.3.0',
     url='https://github.com/kylef/goji',
     author='Kyle Fuller',
     author_email='kyle@fuller.li',
