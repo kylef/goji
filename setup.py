@@ -10,7 +10,7 @@ setup(
     author_email='kyle@fuller.li',
     packages=('goji',),
     install_requires=(
-        'requests', 'requests[socks]', 'requests-html',
+        'requests[socks]', 'requests-html',
         'Click', 'click-datetime',
         'six'
     ),
