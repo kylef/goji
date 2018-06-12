@@ -10,6 +10,12 @@
   credentials are sent in a request it causes a failed login in JIRA (even
   though the request actual succeeds).
 
+- Allows `goji create` to create a issues on some JIRA configurations where
+  `components` is not a permitted field in the create issue screen.
+
+- Makes `goji change-status` work on Python 3, this was causing problems due to
+  Python 2/3 differences.
+
 
 ## 0.3.0
 
