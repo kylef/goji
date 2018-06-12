@@ -184,10 +184,8 @@ def change_status(client, issue_key, status):
             return
 
     transition = transitions[index]
-    if client.change_status(issue_key, transition.id):
-        click.echo('Okay, the status for {} is now "{}".'.format(issue_key, transition))
-    else:
-        click.echo('There was an issue saving the new status as "{}"'.format(transition))
+    client.change_status(issue_key, transition.id)
+    click.echo('Okay, the status for {} is now "{}".'.format(issue_key, transition))
 
 
 @click.option('--message', '-m', help='Message to comment.')

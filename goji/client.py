@@ -103,8 +103,7 @@ class JIRAClient(object):
 
     def change_status(self, issue_key, transition_id):
         data = {'transition': {'id': transition_id}}
-        response = self.post('issue/%s/transitions' % issue_key, data)
-        return (response.status_code == 204)
+        self.post('issue/%s/transitions' % issue_key, data)
 
     def edit_issue(self, issue_key, updated_fields):
         data = {'fields': updated_fields}

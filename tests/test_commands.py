@@ -23,7 +23,7 @@ class TestClient(object):
                     Transition('1', 'Done')]
 
     def change_status(self, issue_key, transition_id):
-        return True
+        pass
 
 
 class CommandTestCase(ServerTestCase):
