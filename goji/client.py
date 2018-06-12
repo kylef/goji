@@ -28,8 +28,9 @@ class JIRAClient(object):
         self.session = requests.Session()
         self.base_url = base_url
         self.rest_base_url = urljoin(self.base_url, 'rest/api/2/')
-        self.session.auth = auth
         self.load_cookies()
+        self.auth = auth
+        #self.session.auth = auth
 
     # Persistent Cookie
 
@@ -84,7 +85,7 @@ class JIRAClient(object):
 
     @property
     def username(self):
-        return self.session.auth[0]
+        return self.auth[0]
 
     def get_user(self):
         response = self.get('myself', allow_redirects=False)
