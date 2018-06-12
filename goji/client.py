@@ -99,7 +99,7 @@ class JIRAClient(object):
     def get_issue_transitions(self, issue_key):
         response = self.get('issue/%s/transitions' % issue_key)
         response.raise_for_status()
-        return map(Transition.from_json, response.json()['transitions'])
+        return list(map(Transition.from_json, response.json()['transitions']))
 
     def change_status(self, issue_key, transition_id):
         data = {'transition': {'id': transition_id}}
