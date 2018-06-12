@@ -249,13 +249,20 @@ def create(client, issue_type, summary, project, component, priority):
             --priority Low
     """
     description = click.edit()
+
     if description is not None:
-        fields = {'summary': summary,
-                  'description': description,
-                  'project': {'key': project},
-                  'components': [{'name': x} for x in component]}
+        fields = {
+            'summary': summary,
+            'description': description,
+            'project': {'key': project}
+        }
+
+        if len(component) > 0:
+            fields['components'] = [{'name': x} for x in component]
+
         if priority is not None:
             fields['priority'] = {'name': priority}
+
         if issue_type is not None:
             fields['issuetype'] = {'name': issue_type}
 
