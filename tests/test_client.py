@@ -87,6 +87,15 @@ class ClientTests(ServerTestCase):
         self.assertEqual(self.server.last_request.method, 'GET')
         self.assertEqual(self.server.last_request.path, '/rest/api/2/issue/GOJI-13/transitions')
 
+    def test_transition_issue(self):
+        self.server.response.status_code = 204
+
+        self.client.change_status('GOJI-14', 1)
+
+        self.assertEqual(self.server.last_request.method, 'POST')
+        self.assertEqual(self.server.last_request.path, '/rest/api/2/issue/GOJI-14/transitions')
+        self.assertEqual(self.server.last_request.body, {'transition': {'id': 1}})
+
     def test_create_issue(self):
         self.server.response.status_code = 201
         self.server.response.body = {
