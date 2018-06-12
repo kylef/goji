@@ -235,6 +235,14 @@ class CommentCommandTests(CommandTestCase):
 
 
 class NewCommandTests(CommandTestCase):
+    def test_create_issue_error(self):
+        self.server.set_error_response(400, "Field 'priority' is required")
+
+        result = self.invoke('create', 'GOJI', 'Sprint #1', 'x', '--description', 'Desc')
+
+        self.assertEqual(result.output, "Description:\n\nDesc\n\nField 'priority' is required\n")
+        self.assertEqual(result.exit_code, 1)
+
     def test_new_title_description(self):
         self.server.set_create_issue_response()
 

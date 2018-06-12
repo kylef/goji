@@ -270,9 +270,11 @@ def create(client, issue_type, summary, project, component, priority, descriptio
         try:
             issue = client.create_issue(fields)
             click.echo('Issue {} created'.format(issue.key))
-        except Exception:
-            click.echo('There was an issue saving the new issue:')
+        except Exception as e:
+            click.echo('Description:\n')
             click.echo(description)
+            click.echo('')
+            raise e
 
 
 @cli.command()
