@@ -107,8 +107,7 @@ class JIRAClient(object):
 
     def edit_issue(self, issue_key, updated_fields):
         data = {'fields': updated_fields}
-        response = self.put('issue/%s' % issue_key, data)
-        return (response.status_code == 204) or (response.status_code == 200)
+        self.put('issue/%s' % issue_key, data)
 
     def create_issue(self, fields):
         response = self.post('issue', {'fields': fields})

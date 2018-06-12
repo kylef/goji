@@ -221,11 +221,14 @@ def edit(client, issue_key):
     description = click.edit(issue.description)
 
     if description is not None and description.strip() != issue.description.strip():
-        if client.edit_issue(issue_key, {'description': description.strip()}):
+        try:
+            client.edit_issue(issue_key, {'description': description.strip()})
             click.echo('Okay, the description for {} has been updated.'.format(issue_key))
-        else:
+        except Exception as e:
             click.echo('There was an issue saving the new description:')
             click.echo(description)
+            click.echo('')
+            raise e
 
 
 @click.argument('issue_type', required=False)
