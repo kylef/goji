@@ -48,15 +48,14 @@ def check_login(client):
         })
 
         auth = client.session.auth
-        client.session.auth = None
 
         if '<body onLoad="document.myForm.submit()">' in response.text or '<body onLoad="submitForm()">' in response.text:
             # Pretend we're a JavaScript client
             response = submit_form(client.session, response)
 
         response = submit_form(client.session, response, {
-            'ssousername': auth[0],
-            'password': auth[1]
+            'ssousername': auth.username,
+            'password': auth.password
         })
 
         client.save_cookies()

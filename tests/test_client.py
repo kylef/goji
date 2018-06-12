@@ -35,6 +35,36 @@ class ClientTests(ServerTestCase):
                 'body': 'example',
             })
 
+    def test_basic_authentication(self):
+        self.server.response.body = {
+            'name': 'kyle',
+            'displayName': 'Kyle Fuller',
+            'emailAddress': 'kyle@example.com',
+        }
+
+        client = JIRAClient(self.server.url, ('username', 'password'))
+        client.get_user()
+
+        self.assertEqual(self.server.last_request.method, 'GET')
+        self.assertEqual(self.server.last_request.path, '/rest/api/2/myself')
+        self.assertEqual(self.server.last_request.headers.get('Authorization'),
+                         'Basic dXNlcm5hbWU6cGFzc3dvcmQ=')
+
+    def test_cookie_authentication(self):
+        self.server.response.body = {
+            'name': 'kyle',
+            'displayName': 'Kyle Fuller',
+            'emailAddress': 'kyle@example.com',
+        }
+
+        client = JIRAClient(self.server.url, ('username', 'password'))
+        client.session.cookies['key'] = 'value'
+        client.get_user()
+
+        self.assertEqual(self.server.last_request.method, 'GET')
+        self.assertEqual(self.server.last_request.path, '/rest/api/2/myself')
+        self.assertFalse('Authorization' in self.server.last_request.headers)
+
     def test_get_user(self):
         self.server.response.body = {
             'name': 'kyle',

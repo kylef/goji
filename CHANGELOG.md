@@ -1,5 +1,16 @@
 # GOJI Changelog
 
+## Master
+
+### Bug Fixes
+
+- Prevents a potential problem when using JIRA with SSO instances which uses
+  cookies. In some cases an invalid authorization header would be sent which
+  doesn't affect the use of goji. However when authorization headers with bad
+  credentials are sent in a request it causes a failed login in JIRA (even
+  though the request actual succeeds).
+
+
 ## 0.3.0
 
 ### Enhancements

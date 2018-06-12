@@ -5,6 +5,7 @@ import json
 import click
 import requests
 from requests.compat import urljoin
+from requests.auth import AuthBase, HTTPBasicAuth
 
 from goji.models import User, Issue, Transition, Sprint, Comment
 from goji.auth import get_credentials
@@ -23,12 +24,40 @@ class JIRAException(click.ClickException):
             click.echo('- {}: {}'.format(key, error))
 
 
+class NoneAuth(AuthBase):
+    """
+    Creates a "None" auth type as if actual None is set as auth and a netrc
+    credentials are found, python-requests will use them instead.
+    """
+
+    def __call__(self, request):
+        return request
+
+
+class JIRAAuth(HTTPBasicAuth):
+    def __call__(self, request):
+        if 'Cookie' in request.headers:
+            # Prevent authorization headers when cookies are present as it
+            # causes silent authentication errors on the JIRA instance if
+            # cookies are used and invalid authorization headers are sent
+            # (although request succeeds)
+
+            return request
+
+        return super(JIRAAuth, self).__call__(request)
+
+
 class JIRAClient(object):
     def __init__(self, base_url, auth=None):
         self.session = requests.Session()
         self.base_url = base_url
         self.rest_base_url = urljoin(self.base_url, 'rest/api/2/')
-        self.session.auth = auth
+
+        if auth:
+            self.session.auth = JIRAAuth(auth[0], auth[1])
+        else:
+            self.session.auth = NoneAuth()
+
         self.load_cookies()
 
     # Persistent Cookie
@@ -84,7 +113,8 @@ class JIRAClient(object):
 
     @property
     def username(self):
-        return self.session.auth[0]
+        if self.session.auth and isinstance(self.session.auth, JIRAAuth):
+            return self.session.auth.username
 
     def get_user(self):
         response = self.get('myself', allow_redirects=False)
