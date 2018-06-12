@@ -233,9 +233,10 @@ def edit(client, issue_key):
 @click.argument('project', metavar='<key>')
 @click.option('--component', '-c', multiple=True, help='Adds a component')
 @click.option('--priority', '-p', help='Sets the issue priority')
+@click.option('--description', help='Sets the issue description')
 @cli.command()
 @click.pass_obj
-def create(client, issue_type, summary, project, component, priority):
+def create(client, issue_type, summary, project, component, priority, description):
     """
     Create a new issue, prompting for description contents
 
@@ -246,7 +247,9 @@ def create(client, issue_type, summary, project, component, priority):
             --component Handbook --component External \\
             --priority Low
     """
-    description = click.edit()
+
+    if description is None:
+        description = click.edit()
 
     if description is not None:
         fields = {

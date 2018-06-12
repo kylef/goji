@@ -234,9 +234,15 @@ class CommentCommandTests(CommandTestCase):
         self.assertEqual(result.exit_code, 1)
 
 
-class NewCommandTests(unittest.TestCase):
+class NewCommandTests(CommandTestCase):
     def test_new_title_description(self):
-        pass
+        self.server.set_create_issue_response()
+
+        result = self.invoke('create', 'GOJI', 'Sprint #1', 'x', '--description', 'Desc')
+
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Issue GOJI-133 created\n')
+        self.assertEqual(result.exit_code, 0)
 
     def test_new_specify_component(self):
         pass
@@ -248,7 +254,7 @@ class NewCommandTests(unittest.TestCase):
         pass
 
 
-class CreateSprintTests(CommentCommandTests):
+class CreateSprintTests(CommandTestCase):
     def test_creating_sprint(self):
         self.server.set_create_sprint_response()
 
