@@ -7,9 +7,15 @@ goji is a minimal command line client for JIRA.
 
 ## Installation
 
+Installation on macOS using [Homebrew](https://brew.sh/):
+
+```shell
+$ brew install kylef/formulae/goji
+```
+
 Install goji using pip:
 
-```bash
+```shell
 $ pip install goji
 ```
 
