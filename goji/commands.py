@@ -1,12 +1,12 @@
 import sys
 
 import click
-from click_datetime import Datetime
 import requests
 from requests.compat import urljoin
 
 from goji.client import JIRAClient
 from goji.auth import get_credentials, set_credentials
+from goji.utils import Datetime
 
 
 def submit_form(session, response, data=None):
