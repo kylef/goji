@@ -11,7 +11,7 @@ setup(
     packages=('goji',),
     install_requires=(
         'requests[socks]', 'requests-html',
-        'Click', 'click-datetime',
+        'Click', 'click-datetime', 'click-spinner',
         'six'
     ),
     entry_points={

@@ -1,6 +1,7 @@
 import sys
 
 import click
+import click_spinner
 from click_datetime import Datetime
 import requests
 from requests.compat import urljoin
@@ -35,33 +36,34 @@ def submit_form(session, response, data=None):
 
 
 def check_login(client):
-    response = client.get('myself', allow_redirects=False)
+    with click_spinner.spinner():
+        response = client.get('myself', allow_redirects=False)
 
-    if response.status_code == 302:
-        if sys.version_info.major == 2:
-            raise click.ClickException('JIRA instances requires SSO login. goji requires Python 3 to do this. Please upgrade to Python 3')
+        if response.status_code == 302:
+            if sys.version_info.major == 2:
+                raise click.ClickException('JIRA instances requires SSO login. goji requires Python 3 to do this. Please upgrade to Python 3')
 
-        # JIRA API may redirect to SSO Authentication if auth fails
-        # Manually follow redirect, some SSO requires browser user-agent
-        response = client.get(response.headers['Location'], headers={
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
-        })
+            # JIRA API may redirect to SSO Authentication if auth fails
+            # Manually follow redirect, some SSO requires browser user-agent
+            response = client.get(response.headers['Location'], headers={
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
+            })
 
-        auth = client.session.auth
+            auth = client.session.auth
 
-        if '<body onLoad="document.myForm.submit()">' in response.text or '<body onLoad="submitForm()">' in response.text:
-            # Pretend we're a JavaScript client
-            response = submit_form(client.session, response)
+            if '<body onLoad="document.myForm.submit()">' in response.text or '<body onLoad="submitForm()">' in response.text:
+                # Pretend we're a JavaScript client
+                response = submit_form(client.session, response)
 
-        response = submit_form(client.session, response, {
-            'ssousername': auth.username,
-            'password': auth.password
-        })
+            response = submit_form(client.session, response, {
+                'ssousername': auth.username,
+                'password': auth.password
+            })
 
-        client.save_cookies()
+            client.save_cookies()
 
-    if response.status_code == 401:
-        raise click.ClickException('Incorrect credentials. Try `goji login`.')
+        if response.status_code == 401:
+            raise click.ClickException('Incorrect credentials. Try `goji login`.')
 
 
 @click.group()
@@ -88,7 +90,9 @@ def cli(ctx, base_url):
 @click.pass_obj
 def open_command(client):
     """View information regarding current user"""
-    user = client.get_user()
+    with click_spinner.spinner():
+        user = client.get_user()
+
     click.echo(user)
 
 
@@ -106,7 +110,10 @@ def open_command(client, issue_key):
 @click.pass_obj
 def show(client, issue_key):
     """Print issue contents"""
-    issue = client.get_issue(issue_key)
+
+    with click_spinner.spinner():
+        issue = client.get_issue(issue_key)
+
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
 
     click.echo('\x1b[01;32m-> {issue.key}\x1b[0m'.format(issue=issue))
@@ -140,7 +147,9 @@ def assign(client, issue_key, user):
     if user is None:
         user = client.username
 
-    client.assign(issue_key, user)
+    with click_spinner.spinner():
+        client.assign(issue_key, user)
+
     click.echo('{} has been assigned to {}.'.format(issue_key, user))
 
 
@@ -150,7 +159,9 @@ def assign(client, issue_key, user):
 def unassign(client, issue_key):
     """Unassign an issue"""
 
-    client.assign(issue_key, None)
+    with click_spinner.spinner():
+        client.assign(issue_key, None)
+
     click.echo('{} has been unassigned.'.format(issue_key))
 
 
@@ -160,8 +171,11 @@ def unassign(client, issue_key):
 @click.pass_obj
 def change_status(client, issue_key, status):
     """Change the status of an issue"""
+
     click.echo('Fetching possible transitions...')
-    transitions = client.get_issue_transitions(issue_key)
+    with click_spinner.spinner():
+        transitions = client.get_issue_transitions(issue_key)
+
     if len(transitions) == 0:
         click.echo('No transitions found for {}'.format(issue_key))
         return
@@ -183,7 +197,10 @@ def change_status(client, issue_key, status):
             return
 
     transition = transitions[index]
-    client.change_status(issue_key, transition.id)
+
+    with click_spinner.spinner():
+        client.change_status(issue_key, transition.id)
+
     click.echo('Okay, the status for {} is now "{}".'.format(issue_key, transition))
 
 
@@ -202,7 +219,8 @@ def comment(client, message, issue_key):
         return
 
     try:
-        client.comment(issue_key, message)
+        with click_spinner.spinner():
+            client.comment(issue_key, message)
         click.echo('Comment created')
     except Exception as e:
         click.echo('Comment:\n')
@@ -221,7 +239,9 @@ def edit(client, issue_key):
 
     if description is not None and description.strip() != issue.description.strip():
         try:
-            client.edit_issue(issue_key, {'description': description.strip()})
+            with click_spinner.spinner():
+                client.edit_issue(issue_key, {'description': description.strip()})
+
             click.echo('Okay, the description for {} has been updated.'.format(issue_key))
         except Exception as e:
             click.echo('There was an issue saving the new description:')
@@ -270,7 +290,9 @@ def create(client, issue_type, summary, project, component, priority, descriptio
             fields['issuetype'] = {'name': issue_type}
 
         try:
-            issue = client.create_issue(fields)
+            with click_spinner.spinner():
+                issue = client.create_issue(fields)
+
             click.echo('Issue {} created'.format(issue.key))
         except Exception as e:
             click.echo('Description:\n')
@@ -305,7 +327,8 @@ def login(base_url):
 def search(client, format, query):
     """Search issues using JQL"""
 
-    issues = client.search(query)
+    with click_spinner.spinner():
+        issues = client.search(query)
 
     for issue in issues:
         click.echo(format.replace('\\n', '\n').format(
@@ -331,5 +354,7 @@ def sprint():
 def sprint_create(client, board_id, name, start_date, end_date):
     """Create a sprint"""
 
-    sprint = client.create_sprint(board_id, name, start_date=start_date, end_date=end_date)
+    with click_spinner.spinner():
+        sprint = client.create_sprint(board_id, name, start_date=start_date, end_date=end_date)
+
     click.echo('Sprint created')
