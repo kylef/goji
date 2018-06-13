@@ -1,6 +1,6 @@
 # GOJI Changelog
 
-## Master
+## 0.3.1
 
 ### Bug Fixes
 
