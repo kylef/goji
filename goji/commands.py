@@ -280,18 +280,33 @@ def create(client, issue_type, summary, project, component, priority, descriptio
 
 
 @cli.command()
+@click.option('--email', '-e', envvar='GOJI_EMAIL', default=None)
+@click.option('--password', '-p', envvar='GOJI_PASSWORD', default=None)
+@click.option('--non-interactive', 'is_interactive', is_flag=True, default=True)
 @click.pass_obj
-def login(base_url):
+def login(base_url, email, password, is_interactive):
     """Authenticate with JIRA server"""
-    email, password = get_credentials(base_url)
-    if email is not None:
-        if not click.confirm('This server is already configured. Override?'):
-            return
+    if is_interactive:
+        email, password = get_credentials(base_url)
 
-    click.echo('Enter your JIRA credentials')
+        if email is not None:
+            if not click.confirm('This server is already configured. Override?'):
+                return
 
-    email = click.prompt('Email', type=str)
-    password = click.prompt('Password', type=str, hide_input=True)
+        click.echo('Enter your JIRA credentials')
+
+        email = click.prompt('Email', type=str)
+        password = click.prompt('Password', type=str, hide_input=True)
+
+    elif email is None:
+        click.echo(click.style('Missing email while running in non-interactive mode', fg='red'))
+        exit()
+
+    elif password is None:
+        click.echo(
+            click.style('Missing password for user, {email}, while running in non-interactive mode'.format(email=email), fg='red')
+        )
+        exit()
 
     client = JIRAClient(base_url, auth=(email, password))
     check_login(client)
