@@ -114,7 +114,7 @@ def show(client, issue_key):
 
     if issue.description:
         for line in issue.description.splitlines():
-            click.echo('  {}'.format(line))
+            click.echo(u'  {}'.format(line))
 
         click.echo('')
 
