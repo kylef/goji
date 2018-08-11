@@ -26,21 +26,59 @@ class TestClient(object):
 
 
 class CommandTestCase(ServerTestCase):
-    def invoke(self, *args):
+    def invoke(self, *args, **kwargs):
         runner = CliRunner()
         args = ['--base-url', self.server.url] + list(args)
-        client = JIRAClient(self.server.url, ('kyle', None))
+
+        if 'client' in kwargs:
+            client = kwargs['client']
+        else:
+            client = JIRAClient(self.server.url, ('kyle', None))
+
         result = runner.invoke(cli, args, obj=client)
         return result
 
 
-class CLITests(unittest.TestCase):
+class CLITests(CommandTestCase):
     def test_error_without_base_url(self):
         runner = CliRunner()
         result = runner.invoke(cli, ['open'])
 
         self.assertTrue('Error: Missing option "--base-url"' in result.output)
         self.assertNotEqual(result.exit_code, 0)
+
+    def test_providing_no_credentials(self):
+        self.server.set_user_response()
+
+        result = self.invoke('whoami', client=None)
+
+        self.assertEqual(result.output, 'Error: Authentication not configured. Run `goji login`.\n')
+        self.assertEqual(result.exit_code, 1)
+
+    def test_providing_email_password(self):
+        self.server.set_user_response()
+
+        result = self.invoke('--email', 'kyle@example.com', '--password', 'pass', 'whoami', client=None)
+
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Kyle Fuller (kyle)\n')
+        self.assertEqual(result.exit_code, 0)
+
+    def test_providing_email_no_password(self):
+        self.server.set_user_response()
+
+        result = self.invoke('--email', 'kyle@example.com', 'whoami', client=None)
+
+        self.assertEqual(result.output, 'Error: Email/password must be provided together.\n')
+        self.assertEqual(result.exit_code, 1)
+
+    def test_providing_password_no_email(self):
+        self.server.set_user_response()
+
+        result = self.invoke('--password', 'pass', 'whoami', client=None)
+
+        self.assertEqual(result.output, 'Error: Email/password must be provided together.\n')
+        self.assertEqual(result.exit_code, 1)
 
 
 class ShowCommandTests(CommandTestCase):

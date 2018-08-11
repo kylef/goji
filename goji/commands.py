@@ -65,17 +65,22 @@ def check_login(client):
 
 @click.group()
 @click.option('--base-url', envvar='GOJI_BASE_URL', required=True)
+@click.option('--email', envvar='GOJI_EMAIL', default=None)
+@click.option('--password', envvar='GOJI_PASSWORD', default=None)
 @click.pass_context
-def cli(ctx, base_url):
+def cli(ctx, base_url, email, password):
     if not ctx.obj:
         if ctx.invoked_subcommand == 'login':
             ctx.obj = base_url
+        elif email and password:
+            ctx.obj = JIRAClient(base_url, auth=(email, password))
+        elif email or password:
+            raise click.ClickException('Email/password must be provided together.')
         else:
             email, password = get_credentials(base_url)
 
             if not email or not password:
-                click.echo('== Authentication not configured. Run `goji login`')
-                exit()
+                raise click.ClickException('Authentication not configured. Run `goji login`.')
 
             ctx.obj = JIRAClient(base_url, auth=(email, password))
 
