@@ -6,6 +6,10 @@
 
 - Issue type argument of `goji create` is not an option `--type/-t`.
 
+### Enhancements
+
+- `goji create` now accepts the `--label` option to supply labels.
+
 ## 0.3.1
 
 ### Bug Fixes

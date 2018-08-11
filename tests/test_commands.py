@@ -258,10 +258,42 @@ class NewCommandTests(CommandTestCase):
         self.assertEqual(result.exit_code, 0)
 
     def test_new_specify_component(self):
-        pass
+        self.server.set_create_issue_response()
+
+        result = self.invoke('create', 'GOJI', 'Sprint #1', '--component', 'client', '-c', 'api', '--description', 'Desc')
+
+        self.assertEqual(self.server.last_request.body, {'fields': {
+            'description': 'Desc',
+            'project': {'key': 'GOJI'},
+            'summary': 'Sprint #1',
+            'components': [
+                {'name': 'client'},
+                {'name': 'api'}
+            ],
+        }})
+
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Issue GOJI-133 created\n')
+        self.assertEqual(result.exit_code, 0)
 
     def test_new_specify_label(self):
-        pass
+        self.server.set_create_issue_response()
+
+        result = self.invoke('create', 'GOJI', 'Sprint #1', '--label', 'api', '--label', 'cli', '--description', 'Desc')
+
+        self.assertEqual(self.server.last_request.body, {'fields': {
+            'description': 'Desc',
+            'project': {'key': 'GOJI'},
+            'summary': 'Sprint #1',
+            'labels': [
+                'api',
+                'cli'
+            ],
+        }})
+
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Issue GOJI-133 created\n')
+        self.assertEqual(result.exit_code, 0)
 
     def test_new_specify_type(self):
         self.server.set_create_issue_response()

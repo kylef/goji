@@ -233,11 +233,12 @@ def edit(client, issue_key):
 @click.argument('project', metavar='<key>')
 @click.option('--type', '-t')
 @click.option('--component', '-c', multiple=True, help='Adds a component')
+@click.option('--label', multiple=True, help='Adds a label')
 @click.option('--priority', '-p', help='Sets the issue priority')
 @click.option('--description', help='Sets the issue description')
 @cli.command()
 @click.pass_obj
-def create(client, project, summary, type, component, priority, description):
+def create(client, project, summary, type, component, label, priority, description):
     """
     Create a new issue, prompting for description contents
 
@@ -262,6 +263,9 @@ def create(client, project, summary, type, component, priority, description):
 
         if len(component) > 0:
             fields['components'] = [{'name': x} for x in component]
+
+        if len(label) > 0:
+            fields['labels'] = label
 
         if priority is not None:
             fields['priority'] = {'name': priority}
