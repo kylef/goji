@@ -334,11 +334,11 @@ def sprint():
 @sprint.command('create')
 @click.argument('board_id', envvar='GOJI_BOARD_ID', type=int)
 @click.argument('name')
-@click.option('--start_date', type=Datetime(format='%d/%m/%y'), default=None)
-@click.option('--end_date', type=Datetime(format='%d/%m/%y'), default=None)
+@click.option('--start', type=Datetime(format='%d/%m/%y'), default=None)
+@click.option('--end', type=Datetime(format='%d/%m/%y'), default=None)
 @click.pass_obj
-def sprint_create(client, board_id, name, start_date, end_date):
+def sprint_create(client, board_id, name, start, end):
     """Create a sprint"""
 
-    client.create_sprint(board_id, name, start_date=start_date, end_date=end_date)
+    client.create_sprint(board_id, name, start_date=start, end_date=end)
     click.echo('Sprint created')
