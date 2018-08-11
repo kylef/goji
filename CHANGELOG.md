@@ -1,5 +1,11 @@
 # GOJI Changelog
 
+## Master
+
+### Breaking Changes
+
+- Issue type argument of `goji create` is not an option `--type/-t`.
+
 ## 0.3.1
 
 ### Bug Fixes
