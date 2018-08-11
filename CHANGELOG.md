@@ -9,6 +9,9 @@
 ### Enhancements
 
 - `goji create` now accepts the `--label` option to supply labels.
+- goji now allows you to provide authentication credentials using `--email` and
+  `--password` options, or alternatively the `GOJI_EMAIL` and `GOJI_PASSWORD`
+  environment variables.
 
 ## 0.3.1
 

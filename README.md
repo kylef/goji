@@ -40,6 +40,20 @@ the other commands:
 $ goji login
 ```
 
+To provide authentication only for the current command, you can pass email and
+password as options:
+
+```bash
+$ goji --email kyle@example.com --password pass whoami
+```
+
+Or alternatively, you may set the credentials using environment variables.
+
+```bash
+$ export GOJI_EMAIL=kyle@example.com
+$ export GOJI_PASSWORD=password
+```
+
 ## Usage
 
 Subcommands:
