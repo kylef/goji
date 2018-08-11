@@ -1,6 +1,5 @@
 import os
 import pickle
-import json
 
 import click
 import requests
@@ -8,7 +7,6 @@ from requests.compat import urljoin
 from requests.auth import AuthBase, HTTPBasicAuth
 
 from goji.models import User, Issue, Transition, Sprint, Comment
-from goji.auth import get_credentials
 
 
 class JIRAException(click.ClickException):
@@ -89,9 +87,11 @@ class JIRAClient(object):
     # Methods
 
     def validate_response(self, response):
-        if response.status_code >= 400 and 'application/json' in response.headers.get('Content-Type', ''):
+        if response.status_code >= 400 and \
+                'application/json' in response.headers.get('Content-Type', ''):
             error = response.json()
-            raise JIRAException(error.get('errorMessages', []), error.get('errors', {}))
+            raise JIRAException(error.get('errorMessages', []),
+                                error.get('errors', {}))
 
     def get(self, path, **kwargs):
         url = urljoin(self.rest_base_url, path)
@@ -145,6 +145,7 @@ class JIRAClient(object):
 
     def assign(self, issue_key, name):
         response = self.put('issue/%s/assignee' % issue_key, {'name': name})
+        response.raise_for_status()
 
     def comment(self, issue_key, comment):
         response = self.post('issue/%s/comment' % issue_key, {'body': comment})

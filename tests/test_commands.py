@@ -1,11 +1,10 @@
 import unittest
-import os
 
 from click.testing import CliRunner
 
 from goji.client import JIRAClient
 from goji.commands import cli
-from goji.models import User, Issue, Transition, Issue
+from goji.models import Transition
 
 from tests.server import ServerTestCase
 

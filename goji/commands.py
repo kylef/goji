@@ -1,7 +1,6 @@
 import sys
 
 import click
-import requests
 from requests.compat import urljoin
 
 from goji.client import JIRAClient
@@ -86,7 +85,7 @@ def cli(ctx, base_url):
 
 @cli.command('whoami')
 @click.pass_obj
-def open_command(client):
+def whoami(client):
     """View information regarding current user"""
     user = client.get_user()
     click.echo(user)
@@ -331,5 +330,5 @@ def sprint():
 def sprint_create(client, board_id, name, start_date, end_date):
     """Create a sprint"""
 
-    sprint = client.create_sprint(board_id, name, start_date=start_date, end_date=end_date)
+    client.create_sprint(board_id, name, start_date=start_date, end_date=end_date)
     click.echo('Sprint created')
