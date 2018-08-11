@@ -349,6 +349,22 @@ class NewCommandTests(CommandTestCase):
         self.assertEqual(result.output, 'Issue GOJI-133 created\n')
         self.assertEqual(result.exit_code, 0)
 
+    def test_new_specify_priority(self):
+        self.server.set_create_issue_response()
+
+        result = self.invoke('create', 'GOJI', 'Sprint #1', '--priority', 'hot', '--description', 'Desc')
+
+        self.assertEqual(self.server.last_request.body, {'fields': {
+            'description': 'Desc',
+            'project': {'key': 'GOJI'},
+            'priority': {'name': 'hot'},
+            'summary': 'Sprint #1',
+        }})
+
+        self.assertIsNone(result.exception)
+        self.assertEqual(result.output, 'Issue GOJI-133 created\n')
+        self.assertEqual(result.exit_code, 0)
+
 
 class CreateSprintTests(CommandTestCase):
     def test_creating_sprint(self):
