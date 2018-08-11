@@ -40,6 +40,18 @@ the other commands:
 $ goji login
 ```
 
+By default, goji will prompt the user to enter their jira credentials. For a more non-interactive experience pass the `non-interactive` flag and supply the email and password to the [`login`](#login) command.
+
+```bash
+$ export GOJI_EMAIL=my@email.com
+$ export GOJI_PASSWORD=myPasword
+goji login --non-interactive
+```
+
+```bash
+$ goji --base-url https://example.atlassian.net login --email my@email.com --password myPasword --non-interactive
+```
+
 ## Usage
 
 Subcommands:
@@ -153,4 +165,3 @@ Okay, the status for GOJI-311 is now "In Progress".
 ## License
 
 goji is released under the BSD license. See [LICENSE](LICENSE).
-

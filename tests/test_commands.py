@@ -43,6 +43,22 @@ class CLITests(unittest.TestCase):
         self.assertNotEqual(result.exit_code, 0)
 
 
+class LoginCommandTests(unittest.TestCase):
+    def test_error_without_email_and_not_interactive(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'login', '--non-interactive']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertTrue('Missing email while running in non-interactive mode' in result.output)
+        self.assertNotEqual(result.exit_code, 0)
+
+    def test_error_without_password_and_not_interactive(self):
+        runner = CliRunner()
+        args = ['--base-url=https://example.com', 'login', '--non-interactive', '--email=kyle']
+        result = runner.invoke(cli, args, obj=TestClient())
+        self.assertTrue('Missing password for user, kyle, while running in non-interactive mode' in result.output)
+        self.assertNotEqual(result.exit_code, 0)
+
+
 class ShowCommandTests(CommandTestCase):
     def test_show__without_issue_key(self):
         result = self.invoke('show')
