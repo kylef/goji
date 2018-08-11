@@ -29,6 +29,9 @@ class Request(object):
 class Response(object):
     def __init__(self, status_code, body):
         self.status_code = status_code
+        self.headers = {
+            'Content-Type': 'application/json'
+        }
         self.body = body
 
 
@@ -68,7 +71,7 @@ class JIRAServer(object):
 
                 handler.send_response(self.response.status_code)
                 handler.send_header('Content-Length', str(len(body)))
-                handler.send_header('Content-Type', 'application/json')
+                handler.send_header('Content-Type', self.response.headers['Content-Type'])
                 handler.end_headers()
                 handler.wfile.write(body.encode('utf-8'))
 

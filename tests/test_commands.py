@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from click.testing import CliRunner
@@ -26,16 +27,19 @@ class TestClient(object):
 
 
 class CommandTestCase(ServerTestCase):
+    def setUp(self):
+        super(CommandTestCase, self).setUp()
+        self.runner = CliRunner()
+
     def invoke(self, *args, **kwargs):
-        runner = CliRunner()
         args = ['--base-url', self.server.url] + list(args)
 
         if 'client' in kwargs:
-            client = kwargs['client']
+            client = kwargs.pop('client')
         else:
             client = JIRAClient(self.server.url, ('kyle', None))
 
-        result = runner.invoke(cli, args, obj=client)
+        result = self.runner.invoke(cli, args, obj=client, **kwargs)
         return result
 
 
@@ -48,8 +52,6 @@ class CLITests(CommandTestCase):
         self.assertNotEqual(result.exit_code, 0)
 
     def test_providing_no_credentials(self):
-        self.server.set_user_response()
-
         result = self.invoke('whoami', client=None)
 
         self.assertEqual(result.output, 'Error: Authentication not configured. Run `goji login`.\n')
@@ -78,6 +80,30 @@ class CLITests(CommandTestCase):
         result = self.invoke('--password', 'pass', 'whoami', client=None)
 
         self.assertEqual(result.output, 'Error: Email/password must be provided together.\n')
+        self.assertEqual(result.exit_code, 1)
+
+
+class LoginCommandTests(CommandTestCase):
+    def test_login(self):
+        self.server.set_user_response()
+
+        with self.runner.isolated_filesystem():
+            result = self.invoke('login', client=None, input='email\npassword\n')
+
+            with open(os.path.expanduser('~/.netrc')) as fp:
+                self.assertEqual(fp.read(), 'machine 127.0.0.1\n  login email\n  password password')
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(self.server.last_request.headers['Authorization'],
+                         'Basic ZW1haWw6cGFzc3dvcmQ=')
+
+    def test_login_incorret_credentials(self):
+        self.server.set_error_response(401, 'Authorization')
+        self.server.response.headers['Content-Type'] = 'text/plain'
+
+        result = self.invoke('login', client=None, input='email\npassword\n')
+
+        self.assertTrue('Error: Incorrect credentials. Try `goji login`.' in result.output)
         self.assertEqual(result.exit_code, 1)
 
 
