@@ -118,7 +118,7 @@ class WhoamiCommandTests(CommandTestCase):
         result = self.invoke('whoami')
 
         self.assertIsNone(result.exception)
-        self.assertTrue(result.output, 'Kyle Fuller (kyle)\n')
+        self.assertEqual(result.output, 'Kyle Fuller (kyle)\n')
         self.assertEqual(result.exit_code, 0)
 
 
