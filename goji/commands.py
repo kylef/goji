@@ -317,13 +317,25 @@ def search(client, format, query):
     issues = client.search(query)
 
     for issue in issues:
-        click.echo(format.replace('\\n', '\n').format(
+        # LKBM
+        status = str(issue.status)
+        if status in ['Open', 'To Do', 'Subscriber Ux to do', 'Merchant operations to do']:
+            color='green'
+        elif status in['Closed', 'Done']:
+            color='red'
+        elif status in['In Progress']:
+            color='yellow'
+        else:
+            color='white'
+            print('\tUnrecognized status "{}". Consider adding to /usr/local/Cellar/python/2.7.14/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/goji/command.py : search'.format(status))
+        click.secho(format.replace('\\n', '\n').format(
+            status=issue.status,
             key=issue.key,
             summary=issue.summary,
             description=issue.description,
             creator=issue.creator,
             assignee=issue.assignee,
-        ))
+        ), fg=color)
 
 
 @cli.group('sprint')
