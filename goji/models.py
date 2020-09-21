@@ -40,6 +40,12 @@ class Issue(Model):
                 links = [IssueLink.from_json(link) for link in fields['issuelinks']]
             issue.links = links
 
+            issue.customfields = {}
+
+            for (key, value) in fields.items():
+                if key.startswith('customfield_'):
+                    issue.customfields[key] = value
+
         return issue
 
     def __init__(self, key):

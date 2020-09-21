@@ -317,7 +317,7 @@ def search(client, format, query):
     issues = client.search(query)
 
     for issue in issues:
-        click.echo(format.replace('\\n', '\n').format(
+        format_kwargs = dict(
             key=issue.key,
             summary=issue.summary,
             description=issue.description,
@@ -325,7 +325,11 @@ def search(client, format, query):
             assignee=issue.assignee,
             status=issue.status,
             resolution=issue.resolution,
-        ))
+        )
+
+        format_kwargs.update(issue.customfields)
+
+        click.echo(format.replace('\\n', '\n').format(**format_kwargs))
 
 
 @cli.group('sprint')
