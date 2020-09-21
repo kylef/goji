@@ -289,18 +289,24 @@ def create(client, project, summary, type, component, label, priority, descripti
 
 
 @cli.command()
+@click.option('--email')
+@click.option('--password', hide_input=True)
 @click.pass_obj
-def login(base_url):
+def login(base_url, email, password):
     """Authenticate with JIRA server"""
-    email, password = get_credentials(base_url)
-    if email is not None:
+    existing_email, existing_password = get_credentials(base_url)
+    if existing_email is not None:
         if not click.confirm('This server is already configured. Override?'):
             return
 
-    click.echo('Enter your JIRA credentials')
+    if not email or not password:
+        click.echo('Enter your JIRA credentials')
 
-    email = click.prompt('Email', type=str)
-    password = click.prompt('Password', type=str, hide_input=True)
+    if not email:
+        email = click.prompt('Email', type=str)
+
+    if not password:
+        password = click.prompt('Password', type=str, hide_input=True)
 
     client = JIRAClient(base_url, auth=(email, password))
     check_login(client)

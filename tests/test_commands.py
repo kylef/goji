@@ -106,6 +106,19 @@ class LoginCommandTests(CommandTestCase):
         self.assertTrue('Error: Incorrect credentials. Try `goji login`.' in result.output)
         self.assertEqual(result.exit_code, 1)
 
+    def test_login_with_credentials_in_options(self):
+        self.server.set_user_response()
+
+        with self.runner.isolated_filesystem():
+            result = self.invoke('login', '--email', 'email', '--password', 'password', client=None)
+
+            with open(os.path.expanduser('~/.netrc')) as fp:
+                self.assertEqual(fp.read(), 'machine 127.0.0.1\n  login email\n  password password')
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(self.server.last_request.headers['Authorization'],
+                         'Basic ZW1haWw6cGFzc3dvcmQ=')
+
 
 class ShowCommandTests(CommandTestCase):
     def test_show__without_issue_key(self):
