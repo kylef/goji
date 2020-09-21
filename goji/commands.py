@@ -323,6 +323,8 @@ def search(client, format, query):
             description=issue.description,
             creator=issue.creator,
             assignee=issue.assignee,
+            status=issue.status,
+            resolution=issue.resolution,
         ))
 
 

@@ -30,6 +30,11 @@ class Issue(Model):
             issue.assignee = User.from_json(fields.get('assignee'))
             issue.status = Status.from_json(fields['status'])
 
+            if 'resolution' in fields:
+                issue.resolution = Resolution.from_json(fields['resolution'])
+            else:
+                issue.resolution = None
+
             links = []
             if 'issuelinks' in fields:
                 links = [IssueLink.from_json(link) for link in fields['issuelinks']]
@@ -148,6 +153,21 @@ class Status(Model):
 
     def __str__(self):
         return self.name
+
+
+class Resolution(Model):
+    @classmethod
+    def from_json(cls, json):
+        return cls(json['id'], json['name'], json.get('description', None))
+
+    def __init__(self, identifier, name, description):
+        self.id = identifier
+        self.name = name
+        self.description = description
+
+    def __str__(self):
+        return self.name
+
 
 
 """
