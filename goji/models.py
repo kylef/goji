@@ -24,7 +24,7 @@ class Issue(Model):
 
         if 'fields' in json:
             fields = json['fields']
-            issue.summary = fields['summary']
+            issue.summary = fields['summary'].rstrip()
             issue.description = fields.get('description')
             issue.creator = User.from_json(fields.get('creator'))
             issue.assignee = User.from_json(fields.get('assignee'))
