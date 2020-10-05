@@ -30,8 +30,9 @@ class Issue(Model):
             issue.assignee = User.from_json(fields.get('assignee'))
             issue.status = Status.from_json(fields['status'])
 
-            if 'resolution' in fields:
-                issue.resolution = Resolution.from_json(fields['resolution'])
+            resolution = fields.get('resolution', None)
+            if resolution:
+                issue.resolution = Resolution.from_json(resolution)
             else:
                 issue.resolution = None
 
