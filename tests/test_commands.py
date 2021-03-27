@@ -48,7 +48,7 @@ class CLITests(CommandTestCase):
         runner = CliRunner()
         result = runner.invoke(cli, ['open'])
 
-        self.assertTrue('Error: Missing option "--base-url"' in result.output)
+        assert "Error: Missing option '--base-url'" in result.output
         self.assertNotEqual(result.exit_code, 0)
 
     def test_providing_no_credentials(self):
@@ -111,7 +111,7 @@ class ShowCommandTests(CommandTestCase):
     def test_show__without_issue_key(self):
         result = self.invoke('show')
 
-        self.assertTrue('Error: Missing argument "issue_key"' in result.output)
+        assert "Error: Missing argument 'ISSUE_KEY'" in result.output
         self.assertNotEqual(result.exit_code, 0)
 
     def test_show_with_issue_key(self):
