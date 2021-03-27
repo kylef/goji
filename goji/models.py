@@ -13,13 +13,13 @@ class User(Model):
 
         return None
 
-    def __init__(self, username: str, name: str, email: Optional[str] = None):
+    def __init__(self, username: Optional[str], name: str, email: Optional[str] = None):
         self.username = username
         self.name = name
         self.email = email
 
     def __str__(self) -> str:
-        return '{} ({})'.format(self.name, self.username)
+        return '{} ({})'.format(self.name, self.username or self.email)
 
 
 class Issue(Model):
