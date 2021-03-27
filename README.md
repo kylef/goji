@@ -1,7 +1,4 @@
-goji
-====
-
-[![Build Status](https://travis-ci.org/kylef/goji.svg?branch=master)](https://travis-ci.org/kylef/goji)
+# goji
 
 goji is a minimal command line client for JIRA.
 
