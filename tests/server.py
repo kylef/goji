@@ -2,7 +2,7 @@ import json
 import unittest
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from threading import Thread
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 
 class ServerTestCase(unittest.TestCase):
@@ -79,6 +79,8 @@ class JIRAServer(object):
                 self.end_headers()
                 self.wfile.write(body.encode('utf-8'))
 
+                server.got_request()
+
             def log_request(self, *args):
                 pass
 
@@ -87,6 +89,9 @@ class JIRAServer(object):
         self.thread = Thread(target=self.server.serve_forever, args=(0.1,))
         self.thread.daemon = True
         self.thread.start()
+
+    def got_request(self) -> None:
+        pass
 
     @property
     def address(self) -> str:
@@ -163,6 +168,21 @@ class JIRAServer(object):
         self.require_path = '/rest/api/2/issue/{}/assignee'.format(issue_key)
 
         self.response.status_code = 204
+
+    def set_transition_response(
+        self, issue_key: str, transitions: List[Dict[str, Any]]
+    ) -> None:
+        self.require_method = 'GET'
+        self.require_path = '/rest/api/2/issue/{}/transitions'.format(issue_key)
+
+        self.response.status_code = 200
+        self.response.body = {'transitions': transitions}
+
+    def set_perform_transition_response(self, issue_key: str) -> None:
+        self.require_method = 'POST'
+        self.require_path = '/rest/api/2/issue/{}/transitions'.format(issue_key)
+
+        self.response.status_code = 200
 
     def set_comment_response(self, issue_key: str) -> None:
         self.require_method = 'POST'

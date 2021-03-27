@@ -5,6 +5,7 @@ from click.testing import CliRunner
 
 from goji.commands import cli
 from goji.models import Transition
+from tests.server import JIRAServer
 
 
 class TestClient(object):
@@ -25,53 +26,101 @@ class TestClient(object):
         pass
 
 
-class ChangeStatusCommandTests(unittest.TestCase):
-    def test_change_status_invalid_issue_key(self):
-        runner = CliRunner()
-        args = ['--base-url=https://example.com', 'change-status', 'invalid']
-        result = runner.invoke(cli, args, obj=TestClient())
-        self.assertIsNone(result.exception)
-        self.assertEqual(
-            result.output,
-            'Fetching possible transitions...\nNo transitions found for invalid\n',
-        )
+def test_change_status_invalid_issue_key(invoke, server: JIRAServer) -> None:
+    server.set_transition_response('GOJI-15', [])
+    result = invoke('change-status', 'GOJI-15')
 
-    def test_change_status_valid_issue_key_invalid_input(self):
-        runner = CliRunner()
-        args = ['--base-url=https://example.com', 'change-status', 'GOJI-311']
-        result = runner.invoke(cli, args, obj=TestClient(), input='3\n')
-        self.assertIsNone(result.exception)
-        self.assertEqual(
-            result.output,
-            'Fetching possible transitions...\n0: Unstarted\n1: Going\n2: Done\nSelect a transition: 3\nNo transitions match "3"\n',
-        )
+    assert (
+        result.output
+        == 'Fetching possible transitions...\nNo transitions found for GOJI-15\n'
+    )
+    assert result.exception is None
+    assert result.exit_code == 0
 
-    def test_change_status_valid_issue_key_valid_input(self):
-        runner = CliRunner()
-        args = ['--base-url=https://example.com', 'change-status', 'GOJI-311']
-        result = runner.invoke(cli, args, obj=TestClient(), input='1\n')
-        self.assertIsNone(result.exception)
-        self.assertEqual(
-            result.output,
-            'Fetching possible transitions...\n0: Unstarted\n1: Going\n2: Done\nSelect a transition: 1\nOkay, the status for GOJI-311 is now "Going".\n',
-        )
 
-    def test_change_status_specify_invalid_status_name(self):
-        runner = CliRunner()
-        args = ['--base-url=https://example.com', 'change-status', 'GOJI-311', 'foo']
-        result = runner.invoke(cli, args, obj=TestClient())
-        self.assertIsNone(result.exception)
-        self.assertEqual(
-            result.output,
-            'Fetching possible transitions...\nNo transitions match "foo"\n',
-        )
+def test_change_status_valid_issue_key_invalid_input(
+    invoke, server: JIRAServer
+) -> None:
+    server.set_transition_response(
+        'GOJI-15',
+        [
+            {'id': '31', 'name': 'Unstarted'},
+            {'id': '21', 'name': 'Going'},
+            {'id': '1', 'name': 'Done'},
+        ],
+    )
 
-    def test_change_status_specify_valid_status_name(self):
-        runner = CliRunner()
-        args = ['--base-url=https://example.com', 'change-status', 'GOJI-311', 'done']
-        result = runner.invoke(cli, args, obj=TestClient())
-        self.assertIsNone(result.exception)
-        self.assertEqual(
-            result.output,
-            'Fetching possible transitions...\nOkay, the status for GOJI-311 is now "Done".\n',
-        )
+    result = invoke('change-status', 'GOJI-15', input='3\n')
+    assert (
+        result.output
+        == 'Fetching possible transitions...\n0: Unstarted\n1: Going\n2: Done\nSelect a transition: 3\nNo transitions match "3"\n'
+    )
+    assert result.exception is None
+    assert result.exit_code == 0
+
+
+def test_change_status_valid_issue_key_valid_input(invoke, server: JIRAServer) -> None:
+    server.set_transition_response(
+        'GOJI-15',
+        [
+            {'id': '31', 'name': 'Unstarted'},
+            {'id': '21', 'name': 'Going'},
+            {'id': '1', 'name': 'Done'},
+        ],
+    )
+
+    def on_request() -> None:
+        server.set_perform_transition_response('GOJI-15')
+
+    setattr(server, 'got_request', on_request)
+
+    result = invoke('change-status', 'GOJI-15', input='1\n')
+    assert (
+        result.output
+        == 'Fetching possible transitions...\n0: Unstarted\n1: Going\n2: Done\nSelect a transition: 1\nOkay, the status for GOJI-15 is now "Going".\n'
+    )
+    assert result.exception is None
+    assert result.exit_code == 0
+
+
+def test_change_status_specify_invalid_status_name(invoke, server: JIRAServer) -> None:
+    server.set_transition_response(
+        'GOJI-15',
+        [
+            {'id': '31', 'name': 'Unstarted'},
+            {'id': '21', 'name': 'Going'},
+            {'id': '1', 'name': 'Done'},
+        ],
+    )
+    result = invoke('change-status', 'GOJI-15', 'foo')
+
+    assert (
+        result.output
+        == 'Fetching possible transitions...\nNo transitions match "foo"\n'
+    )
+    assert result.exception is None
+    assert result.exit_code == 0
+
+
+def test_change_status_specify_valid_status_name(invoke, server: JIRAServer) -> None:
+    server.set_transition_response(
+        'GOJI-15',
+        [
+            {'id': '31', 'name': 'Unstarted'},
+            {'id': '21', 'name': 'Going'},
+            {'id': '1', 'name': 'Done'},
+        ],
+    )
+
+    def on_request() -> None:
+        server.set_perform_transition_response('GOJI-15')
+
+    setattr(server, 'got_request', on_request)
+
+    result = invoke('change-status', 'GOJI-15', 'done')
+    assert (
+        result.output
+        == 'Fetching possible transitions...\nOkay, the status for GOJI-15 is now "Done".\n'
+    )
+    assert result.exception is None
+    assert result.exit_code == 0

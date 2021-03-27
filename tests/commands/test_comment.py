@@ -1,23 +1,23 @@
-from tests.commands.utils import CommandTestCase
+from tests.server import JIRAServer
 
 
-class CommentCommandTests(CommandTestCase):
-    def test_commenting_with_message(self):
-        self.server.set_comment_response('GOJI-311')
+def test_commenting_with_message(invoke, server: JIRAServer) -> None:
+    server.set_comment_response('GOJI-311')
 
-        result = self.invoke('comment', 'GOJI-311', '-m', 'My short one-line comment')
+    result = invoke('comment', 'GOJI-311', '-m', 'My short one-line comment')
 
-        self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Comment created\n')
-        self.assertEqual(result.exit_code, 0)
+    assert result.output == 'Comment created\n'
+    assert result.exception is None
+    assert result.exit_code == 0
 
-    def test_commenting_producing_error(self):
-        self.server.set_error_response(404, 'Issue Does Not Exist')
 
-        result = self.invoke('comment', 'GOJI-311', '-m', 'My short one-line comment')
+def test_commenting_producing_error(invoke, server: JIRAServer) -> None:
+    server.set_error_response(404, 'Issue Does Not Exist')
 
-        self.assertEqual(
-            result.output,
-            'Comment:\n\nMy short one-line comment\n\nIssue Does Not Exist\n',
-        )
-        self.assertEqual(result.exit_code, 1)
+    result = invoke('comment', 'GOJI-311', '-m', 'My short one-line comment')
+
+    assert (
+        result.output
+        == 'Comment:\n\nMy short one-line comment\n\nIssue Does Not Exist\n'
+    )
+    assert result.exit_code == 1

@@ -1,20 +1,20 @@
-from tests.commands.utils import CommandTestCase
+from tests.server import JIRAServer
 
 
-class ShowCommandTests(CommandTestCase):
-    def test_show__without_issue_key(self) -> None:
-        result = self.invoke('show')
+def test_show_without_issue(invoke) -> None:
+    result = invoke('show')
 
-        assert "Error: Missing argument 'ISSUE_KEY'" in result.output
-        self.assertNotEqual(result.exit_code, 0)
+    assert "Error: Missing argument 'ISSUE_KEY'" in result.output
+    assert result.exit_code != 0
 
-    def test_show_with_issue_key(self):
-        self.server.set_issue_response()
 
-        result = self.invoke('show', 'GOJI-1')
-        output = result.output.replace(self.server.url, 'https://example.com')
+def test_show(invoke, server: JIRAServer) -> None:
+    server.set_issue_response()
 
-        expected = '''-> GOJI-1
+    result = invoke('show', 'GOJI-1')
+    output = result.output.replace(server.url, 'https://example.com')
+
+    expected = '''-> GOJI-1
   Example Issue
 
   Issue Description
@@ -25,7 +25,5 @@ class ShowCommandTests(CommandTestCase):
   - URL: https://example.com/browse/GOJI-1
 '''
 
-        assert output == expected
-        assert result.exit_code == 0
-
-
+    assert output == expected
+    assert result.exit_code == 0

@@ -1,12 +1,11 @@
-from tests.commands.utils import CommandTestCase
+from tests.server import JIRAServer
 
 
-class WhoamiCommandTests(CommandTestCase):
-    def test_whoami(self):
-        self.server.set_user_response()
+def test_whoami(invoke, server: JIRAServer) -> None:
+    server.set_user_response()
 
-        result = self.invoke('whoami')
+    result = invoke('whoami')
 
-        self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Kyle Fuller (kyle)\n')
-        self.assertEqual(result.exit_code, 0)
+    assert result.output == 'Kyle Fuller (kyle)\n'
+    assert result.exception is None
+    assert result.exit_code == 0

@@ -1,141 +1,128 @@
-from tests.commands.utils import CommandTestCase
+from tests.server import JIRAServer
 
 
-class NewCommandTests(CommandTestCase):
-    def test_create_issue_error(self):
-        self.server.set_error_response(400, "Field 'priority' is required")
+def test_create_issue_error(invoke, server: JIRAServer) -> None:
+    server.set_error_response(400, "Field 'priority' is required")
 
-        result = self.invoke('create', 'GOJI', 'Sprint #1', '--description', 'Desc')
+    result = invoke('create', 'GOJI', 'Sprint #1', '--description', 'Desc')
 
-        self.assertEqual(
-            result.output, "Description:\n\nDesc\n\nField 'priority' is required\n"
-        )
-        self.assertEqual(result.exit_code, 1)
+    assert result.output == "Description:\n\nDesc\n\nField 'priority' is required\n"
+    assert result.exit_code == 1
 
-    def test_new_title_description(self):
-        self.server.set_create_issue_response()
 
-        result = self.invoke('create', 'GOJI', 'Sprint #1', '--description', 'Desc')
+def test_new_title_description(invoke, server: JIRAServer) -> None:
+    server.set_create_issue_response()
 
-        self.assertEqual(
-            self.server.last_request.body,
-            {
-                'fields': {
-                    'description': 'Desc',
-                    'project': {'key': 'GOJI'},
-                    'summary': 'Sprint #1',
-                }
-            },
-        )
+    result = invoke('create', 'GOJI', 'Sprint #1', '--description', 'Desc')
 
-        self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Issue GOJI-133 created\n')
-        self.assertEqual(result.exit_code, 0)
+    assert server.last_request.body == {
+        'fields': {
+            'description': 'Desc',
+            'project': {'key': 'GOJI'},
+            'summary': 'Sprint #1',
+        }
+    }
 
-    def test_new_specify_component(self):
-        self.server.set_create_issue_response()
+    assert result.output == 'Issue GOJI-133 created\n'
+    assert result.exception is None
+    assert result.exit_code == 0
 
-        result = self.invoke(
-            'create',
-            'GOJI',
-            'Sprint #1',
-            '--component',
-            'client',
-            '-c',
-            'api',
-            '--description',
-            'Desc',
-        )
 
-        self.assertEqual(
-            self.server.last_request.body,
-            {
-                'fields': {
-                    'description': 'Desc',
-                    'project': {'key': 'GOJI'},
-                    'summary': 'Sprint #1',
-                    'components': [{'name': 'client'}, {'name': 'api'}],
-                }
-            },
-        )
+def test_new_specify_component(invoke, server: JIRAServer) -> None:
+    server.set_create_issue_response()
 
-        self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Issue GOJI-133 created\n')
-        self.assertEqual(result.exit_code, 0)
+    result = invoke(
+        'create',
+        'GOJI',
+        'Sprint #1',
+        '--component',
+        'client',
+        '-c',
+        'api',
+        '--description',
+        'Desc',
+    )
 
-    def test_new_specify_label(self):
-        self.server.set_create_issue_response()
+    assert server.last_request.body == {
+        'fields': {
+            'description': 'Desc',
+            'project': {'key': 'GOJI'},
+            'summary': 'Sprint #1',
+            'components': [{'name': 'client'}, {'name': 'api'}],
+        }
+    }
 
-        result = self.invoke(
-            'create',
-            'GOJI',
-            'Sprint #1',
-            '--label',
-            'api',
-            '--label',
-            'cli',
-            '--description',
-            'Desc',
-        )
+    assert result.output == 'Issue GOJI-133 created\n'
+    assert result.exception is None
+    assert result.exit_code == 0
 
-        self.assertEqual(
-            self.server.last_request.body,
-            {
-                'fields': {
-                    'description': 'Desc',
-                    'project': {'key': 'GOJI'},
-                    'summary': 'Sprint #1',
-                    'labels': ['api', 'cli'],
-                }
-            },
-        )
 
-        self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Issue GOJI-133 created\n')
-        self.assertEqual(result.exit_code, 0)
+def test_new_specify_label(invoke, server: JIRAServer) -> None:
+    server.set_create_issue_response()
 
-    def test_new_specify_type(self):
-        self.server.set_create_issue_response()
+    result = invoke(
+        'create',
+        'GOJI',
+        'Sprint #1',
+        '--label',
+        'api',
+        '--label',
+        'cli',
+        '--description',
+        'Desc',
+    )
 
-        result = self.invoke(
-            'create', 'GOJI', 'Sprint #1', '--type', 'Bug', '--description', 'Desc'
-        )
+    assert server.last_request.body == {
+        'fields': {
+            'description': 'Desc',
+            'project': {'key': 'GOJI'},
+            'summary': 'Sprint #1',
+            'labels': ['api', 'cli'],
+        }
+    }
 
-        self.assertEqual(
-            self.server.last_request.body,
-            {
-                'fields': {
-                    'description': 'Desc',
-                    'issuetype': {'name': 'Bug'},
-                    'project': {'key': 'GOJI'},
-                    'summary': 'Sprint #1',
-                }
-            },
-        )
+    assert result.output == 'Issue GOJI-133 created\n'
+    assert result.exception is None
+    assert result.exit_code == 0
 
-        self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Issue GOJI-133 created\n')
-        self.assertEqual(result.exit_code, 0)
 
-    def test_new_specify_priority(self):
-        self.server.set_create_issue_response()
+def test_new_specify_type(invoke, server: JIRAServer) -> None:
+    server.set_create_issue_response()
 
-        result = self.invoke(
-            'create', 'GOJI', 'Sprint #1', '--priority', 'hot', '--description', 'Desc'
-        )
+    result = invoke(
+        'create', 'GOJI', 'Sprint #1', '--type', 'Bug', '--description', 'Desc'
+    )
 
-        self.assertEqual(
-            self.server.last_request.body,
-            {
-                'fields': {
-                    'description': 'Desc',
-                    'project': {'key': 'GOJI'},
-                    'priority': {'name': 'hot'},
-                    'summary': 'Sprint #1',
-                }
-            },
-        )
+    assert server.last_request.body == {
+        'fields': {
+            'description': 'Desc',
+            'issuetype': {'name': 'Bug'},
+            'project': {'key': 'GOJI'},
+            'summary': 'Sprint #1',
+        }
+    }
 
-        self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Issue GOJI-133 created\n')
-        self.assertEqual(result.exit_code, 0)
+    assert result.output == 'Issue GOJI-133 created\n'
+    assert result.exception is None
+    assert result.exit_code == 0
+
+
+def test_new_specify_priority(invoke, server: JIRAServer) -> None:
+    server.set_create_issue_response()
+
+    result = invoke(
+        'create', 'GOJI', 'Sprint #1', '--priority', 'hot', '--description', 'Desc'
+    )
+
+    assert server.last_request.body == {
+        'fields': {
+            'description': 'Desc',
+            'project': {'key': 'GOJI'},
+            'priority': {'name': 'hot'},
+            'summary': 'Sprint #1',
+        }
+    }
+
+    assert result.output == 'Issue GOJI-133 created\n'
+    assert result.exception is None
+    assert result.exit_code == 0

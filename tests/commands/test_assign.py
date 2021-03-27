@@ -1,25 +1,25 @@
-from tests.commands.utils import CommandTestCase
+from tests.server import JIRAServer
 
 
-class AssignCommandTests(CommandTestCase):
-    def test_assign_specified_user(self):
-        self.server.set_assign_response('GOJI-123')
+def test_assign_specified_user(invoke, server: JIRAServer) -> None:
+    server.set_assign_response('GOJI-123')
 
-        result = self.invoke('assign', 'GOJI-123', 'jones')
+    result = invoke('assign', 'GOJI-123', 'jones')
 
-        self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'GOJI-123 has been assigned to jones.\n')
-        self.assertEqual(result.exit_code, 0)
+    assert result.output == 'GOJI-123 has been assigned to jones.\n'
+    assert result.exception is None
+    assert result.exit_code is 0
 
-        self.assertEqual(self.server.last_request.body, {'name': 'jones'})
+    assert server.last_request.body == {'name': 'jones'}
 
-    def test_assign_current_user(self):
-        self.server.set_assign_response('GOJI-123')
 
-        result = self.invoke('assign', 'GOJI-123')
+def test_assign_current_user(invoke, server: JIRAServer) -> None:
+    server.set_assign_response('GOJI-123')
 
-        self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'GOJI-123 has been assigned to kyle.\n')
-        self.assertEqual(result.exit_code, 0)
+    result = invoke('assign', 'GOJI-123')
 
-        self.assertEqual(self.server.last_request.body, {'name': 'kyle'})
+    assert result.output == 'GOJI-123 has been assigned to kyle.\n'
+    assert result.exception is None
+    assert result.exit_code is 0
+
+    assert server.last_request.body == {'name': 'kyle'}
