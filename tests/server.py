@@ -1,9 +1,8 @@
 import json
 import unittest
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 from threading import Thread
 from typing import List, Optional
-
-from six.moves import BaseHTTPServer
 
 
 class ServerTestCase(unittest.TestCase):
@@ -38,50 +37,52 @@ class JIRAServer(object):
     def __init__(self):
         self.reset()
 
-        class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
-            def do_GET(handler):
-                handler.handle_request('GET')
+        server = self
 
-            def do_POST(handler):
-                handler.handle_request('POST')
+        class Handler(SimpleHTTPRequestHandler):
+            def do_GET(self):
+                self.handle_request('GET')
 
-            def do_PUT(handler):
-                handler.handle_request('PUT')
+            def do_POST(self):
+                self.handle_request('POST')
 
-            def handle_request(handler, method):
-                if self.require_method and method != self.require_method:
+            def do_PUT(self):
+                self.handle_request('PUT')
+
+            def handle_request(self, method):
+                if server.require_method and method != server.require_method:
                     raise Exception('Client called incorrect method')
 
-                if self.require_path and handler.path != self.require_path:
-                    raise Exception('Client called incorrect path: ' + handler.path)
+                if server.require_path and self.path != server.require_path:
+                    raise Exception('Client called incorrect path: ' + self.path)
 
                 if (
-                    'Content-Length' in handler.headers
-                    and handler.headers['Content-Type'] == 'application/json'
+                    'Content-Length' in self.headers
+                    and self.headers['Content-Type'] == 'application/json'
                 ):
-                    length = int(handler.headers['Content-Length'])
-                    raw_body = handler.rfile.read(length).decode('utf-8')
+                    length = int(self.headers['Content-Length'])
+                    raw_body = self.rfile.read(length).decode('utf-8')
                     body = json.loads(raw_body)
                 else:
                     body = None
 
-                request = Request(method, handler.path, handler.headers, body)
-                self.requests.append(request)
+                request = Request(method, self.path, self.headers, body)
+                server.requests.append(request)
 
-                body = json.dumps(self.response.body)
+                body = json.dumps(server.response.body)
 
-                handler.send_response(self.response.status_code)
-                handler.send_header('Content-Length', str(len(body)))
-                handler.send_header(
-                    'Content-Type', self.response.headers['Content-Type']
+                self.send_response(server.response.status_code)
+                self.send_header('Content-Length', str(len(body)))
+                self.send_header(
+                    'Content-Type', server.response.headers['Content-Type']
                 )
-                handler.end_headers()
-                handler.wfile.write(body.encode('utf-8'))
+                self.end_headers()
+                self.wfile.write(body.encode('utf-8'))
 
             def log_request(self, *args):
                 pass
 
-        self.server = BaseHTTPServer.HTTPServer(('localhost', 0), Handler)
+        self.server = HTTPServer(('localhost', 0), Handler)
         self.server.timeout = 0.5
         self.thread = Thread(target=self.server.serve_forever, args=(0.1,))
         self.thread.daemon = True
