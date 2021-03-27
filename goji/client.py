@@ -1,4 +1,5 @@
 import datetime
+import mimetypes
 import os
 import pickle
 from typing import Any, List, Optional
@@ -8,7 +9,7 @@ import requests
 from requests.auth import AuthBase, HTTPBasicAuth
 from requests.compat import urljoin
 
-from goji.models import Comment, Issue, Sprint, Transition, User
+from goji.models import Attachment, Comment, Issue, Sprint, Transition, User
 
 
 class JIRAException(click.ClickException):
@@ -142,6 +143,20 @@ class JIRAClient(object):
     def edit_issue(self, issue_key: str, updated_fields) -> None:
         data = {'fields': updated_fields}
         self.put('issue/%s' % issue_key, data)
+
+    def attach(self, issue_key: str, attachment) -> List[Attachment]:
+        media_type = mimetypes.guess_type(attachment.name)
+        files = {
+            'file': (attachment.name, attachment, media_type[0]),
+        }
+        url = urljoin(self.rest_base_url, f'issue/{issue_key}/attachments')
+        response = self.session.post(
+            url,
+            headers={'X-Atlassian-Token': 'no-check'},
+            files=files,
+        )
+        self.validate_response(response)
+        return list(map(Attachment.from_json, response.json()))
 
     def create_issue(self, fields) -> Issue:
         response = self.post('issue', {'fields': fields})

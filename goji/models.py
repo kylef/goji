@@ -9,7 +9,7 @@ class User(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> Optional['User']:
         if json:
-            return cls(json['name'], json['displayName'], json.get('emailAddress'))
+            return cls(json.get('name') or '', json['displayName'], json.get('emailAddress'))
 
         return None
 
@@ -191,6 +191,16 @@ class Resolution(Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class Attachment(Model):
+    @classmethod
+    def from_json(cls, json: Dict[str, Any]) -> 'Attachment':
+        return cls(json.get('filename'), int(json['size']))
+
+    def __init__(self, filename: Optional[str], size: int):
+        self.filename = filename
+        self.size = size
 
 
 """

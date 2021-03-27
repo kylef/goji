@@ -1,10 +1,9 @@
-from typing import Dict, Optional
 from pathlib import Path
+from typing import Dict, Optional
+
 import click
-
 import toml
-from jsonschema import validate, ValidationError
-
+from jsonschema import ValidationError, validate
 
 SCHEMA = {
   'type': 'object',

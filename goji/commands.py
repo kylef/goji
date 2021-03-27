@@ -273,6 +273,24 @@ def edit(client: JIRAClient, issue_key: str) -> None:
             raise e
 
 
+@click.argument('attachments', type=click.File('rb'), nargs=-1)
+@click.argument('issue_key')
+@cli.command()
+@click.pass_obj
+def attach(client: JIRAClient, issue_key: str, attachments) -> None:
+    """Attach file(s) to an issue"""
+
+    if len(attachments) == 0:
+        click.echo('No attachments to upload')
+        return
+
+    for fp in attachments:
+        attachments = client.attach(issue_key, fp)
+
+        for attachment in attachments:
+            print(f'Attachment {attachment.filename} uploaded.')
+
+
 @click.argument('summary')
 @click.argument('project', metavar='<key>')
 @click.option('--type', '-t')

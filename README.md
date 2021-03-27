@@ -84,6 +84,7 @@ Subcommands:
 - [comment](#comment) - Comment on an issue
 - [change-status](#change-status) - Change the status of an issue
 - edit - Edit issue description
+- attach - Attach file(s) to an issue
 - [open](#open) - Open issue in a web browser
 - [search](#search) - Search issues using JQL
 - [sprint](#sprint) - Collection of commands to manage sprints
