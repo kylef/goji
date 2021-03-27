@@ -3,10 +3,10 @@ import pickle
 
 import click
 import requests
-from requests.compat import urljoin
 from requests.auth import AuthBase, HTTPBasicAuth
+from requests.compat import urljoin
 
-from goji.models import User, Issue, Transition, Sprint, Comment
+from goji.models import Comment, Issue, Sprint, Transition, User
 
 
 class JIRAException(click.ClickException):
@@ -87,11 +87,11 @@ class JIRAClient(object):
     # Methods
 
     def validate_response(self, response):
-        if response.status_code >= 400 and \
-                'application/json' in response.headers.get('Content-Type', ''):
+        if response.status_code >= 400 and 'application/json' in response.headers.get(
+            'Content-Type', ''
+        ):
             error = response.json()
-            raise JIRAException(error.get('errorMessages', []),
-                                error.get('errors', {}))
+            raise JIRAException(error.get('errorMessages', []), error.get('errors', {}))
 
     def get(self, path, **kwargs):
         url = urljoin(self.rest_base_url, path)

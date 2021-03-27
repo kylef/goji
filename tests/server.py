@@ -1,5 +1,5 @@
-import unittest
 import json
+import unittest
 from threading import Thread
 
 from six.moves import BaseHTTPServer
@@ -29,9 +29,7 @@ class Request(object):
 class Response(object):
     def __init__(self, status_code, body):
         self.status_code = status_code
-        self.headers = {
-            'Content-Type': 'application/json'
-        }
+        self.headers = {'Content-Type': 'application/json'}
         self.body = body
 
 
@@ -56,8 +54,10 @@ class JIRAServer(object):
                 if self.require_path and handler.path != self.require_path:
                     raise Exception('Client called incorrect path: ' + handler.path)
 
-                if 'Content-Length' in handler.headers and \
-                        handler.headers['Content-Type'] == 'application/json':
+                if (
+                    'Content-Length' in handler.headers
+                    and handler.headers['Content-Type'] == 'application/json'
+                ):
                     length = int(handler.headers['Content-Length'])
                     raw_body = handler.rfile.read(length).decode('utf-8')
                     body = json.loads(raw_body)
@@ -71,7 +71,9 @@ class JIRAServer(object):
 
                 handler.send_response(self.response.status_code)
                 handler.send_header('Content-Length', str(len(body)))
-                handler.send_header('Content-Type', self.response.headers['Content-Type'])
+                handler.send_header(
+                    'Content-Type', self.response.headers['Content-Type']
+                )
                 handler.end_headers()
                 handler.wfile.write(body.encode('utf-8'))
 
@@ -109,9 +111,7 @@ class JIRAServer(object):
 
     def set_error_response(self, status_code, error):
         self.response.status_code = status_code
-        self.response.body = {
-            'errorMessages': [error]
-        }
+        self.response.body = {'errorMessages': [error]}
 
     def set_user_response(self):
         self.require_method = 'GET'
@@ -134,19 +134,10 @@ class JIRAServer(object):
             'fields': {
                 'summary': 'Example Issue',
                 'description': 'Issue Description',
-                'status': {
-                    'id': 1,
-                    'name': 'Open'
-                },
-                'creator': {
-                    'displayName': 'Kyle Fuller',
-                    'name': 'kyle'
-                },
-                'assignee': {
-                    'displayName': 'Delisa',
-                    'name': 'delisa'
-                }
-            }
+                'status': {'id': 1, 'name': 'Open'},
+                'creator': {'displayName': 'Kyle Fuller', 'name': 'kyle'},
+                'assignee': {'displayName': 'Delisa', 'name': 'delisa'},
+            },
         }
 
     def set_create_issue_response(self):
@@ -159,19 +150,10 @@ class JIRAServer(object):
             'fields': {
                 'summary': 'Example Issue',
                 'description': 'Issue Description',
-                'status': {
-                    'id': 1,
-                    'name': 'Open'
-                },
-                'creator': {
-                    'displayName': 'Kyle Fuller',
-                    'name': 'kyle'
-                },
-                'assignee': {
-                    'displayName': 'Delisa',
-                    'name': 'delisa'
-                }
-            }
+                'status': {'id': 1, 'name': 'Open'},
+                'creator': {'displayName': 'Kyle Fuller', 'name': 'kyle'},
+                'assignee': {'displayName': 'Delisa', 'name': 'delisa'},
+            },
         }
 
     def set_assign_response(self, issue_key):
@@ -207,19 +189,10 @@ class JIRAServer(object):
                     'fields': {
                         'summary': 'My First Issue',
                         'description': 'One\nTwo\nThree\n',
-                        'status': {
-                            'id': 1,
-                            'name': 'open'
-                        },
-                        'creator': {
-                            'displayName': 'Kyle Fuller',
-                            'name': 'kyle'
-                        },
-                        'assignee': {
-                            'displayName': 'Delisa',
-                            'name': 'delisa'
-                        }
-                    }
+                        'status': {'id': 1, 'name': 'open'},
+                        'creator': {'displayName': 'Kyle Fuller', 'name': 'kyle'},
+                        'assignee': {'displayName': 'Delisa', 'name': 'delisa'},
+                    },
                 }
             ]
         }

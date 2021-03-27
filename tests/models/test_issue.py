@@ -1,4 +1,5 @@
 import unittest
+
 from goji.models import Issue, IssueLink, IssueLinkType
 
 
@@ -36,10 +37,10 @@ class IssueTests(unittest.TestCase):
                                     'id': 1,
                                     'name': 'Open',
                                 },
-                            }
-                        }
+                            },
+                        },
                     }
-                ]
+                ],
             },
         }
 
@@ -77,8 +78,8 @@ class IssueLinkTests(unittest.TestCase):
                         'id': 1,
                         'name': 'Open',
                     },
-                }
-            }
+                },
+            },
         }
 
         link = IssueLink.from_json(json)
@@ -104,8 +105,8 @@ class IssueLinkTests(unittest.TestCase):
                         'id': 1,
                         'name': 'Open',
                     },
-                }
-            }
+                },
+            },
         }
 
         link = IssueLink.from_json(json)

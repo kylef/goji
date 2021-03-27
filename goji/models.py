@@ -99,7 +99,9 @@ class IssueLink(Model):
             direction = self.link_type.inward.capitalize()
             issue = self.inward_issue
 
-        return '{direction}: {issue.key} ({issue.status})'.format(direction=direction, issue=issue)
+        return '{direction}: {issue.key} ({issue.status})'.format(
+            direction=direction, issue=issue
+        )
 
 
 class Transition(Model):
@@ -174,7 +176,6 @@ class Resolution(Model):
 
     def __str__(self):
         return self.name
-
 
 
 """

@@ -1,4 +1,5 @@
 import unittest
+
 from goji.models import Transition
 
 
@@ -11,17 +12,17 @@ class TransitionTests(unittest.TestCase):
                     'self': 'https://example.net/rest/api/2/statuscategory/4',
                     'id': 4,
                     'key': 'indeterminate',
-                    'colorName': 'yellow'
+                    'colorName': 'yellow',
                 },
                 'description': 'This issue is being actively worked on.',
                 'self': 'https://example.net/rest/api/2/status/3',
                 'iconUrl': 'https://example.net/icons/statuses/inprogress.png',
                 'id': '3',
-                'name': 'In Progress'
+                'name': 'In Progress',
             },
             'hasScreen': False,
             'id': '21',
-            'name': 'In Progress'
+            'name': 'In Progress',
         }
         transition = Transition.from_json(json)
 

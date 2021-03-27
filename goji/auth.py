@@ -1,6 +1,6 @@
-from netrc import netrc
-from os import path, chmod
 import re
+from netrc import netrc
+from os import chmod, path
 from stat import S_IRUSR, S_IWUSR
 from textwrap import dedent
 
@@ -31,15 +31,23 @@ def set_credentials(base_url, email, password):
         contents = matcher.sub('', contents)
         with open(filepath, 'w') as rcfile:
             rcfile.write(contents)
-            rcfile.write(dedent("""\n\
+            rcfile.write(
+                dedent(
+                    """\n\
                     machine {}
                       login {}
-                      password {}""").format(hostname, email, password))
+                      password {}"""
+                ).format(hostname, email, password)
+            )
 
     else:
         with open(filepath, 'w') as rcfile:
-            rcfile.write(dedent("""\
+            rcfile.write(
+                dedent(
+                    """\
                     machine {}
                       login {}
-                      password {}""").format(hostname, email, password))
+                      password {}"""
+                ).format(hostname, email, password)
+            )
         chmod(filepath, S_IWUSR | S_IRUSR)

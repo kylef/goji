@@ -3,13 +3,14 @@ import sys
 import click
 from requests.compat import urljoin
 
-from goji.client import JIRAClient
 from goji.auth import get_credentials, set_credentials
+from goji.client import JIRAClient
 from goji.utils import Datetime
 
 
 def submit_form(session, response, data=None):
     from requests_html import HTML
+
     html = HTML(url=response.url, html=response.text)
 
     forms = html.find('form')
@@ -38,24 +39,33 @@ def check_login(client):
 
     if response.status_code == 302:
         if sys.version_info.major == 2:
-            raise click.ClickException('JIRA instances requires SSO login. goji requires Python 3 to do this. Please upgrade to Python 3')
+            raise click.ClickException(
+                'JIRA instances requires SSO login. goji requires Python 3 to do this. Please upgrade to Python 3'
+            )
 
         # JIRA API may redirect to SSO Authentication if auth fails
         # Manually follow redirect, some SSO requires browser user-agent
-        response = client.get(response.headers['Location'], headers={
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
-        })
+        response = client.get(
+            response.headers['Location'],
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
+            },
+        )
 
         auth = client.session.auth
 
-        if '<body onLoad="document.myForm.submit()">' in response.text or '<body onLoad="submitForm()">' in response.text:
+        if (
+            '<body onLoad="document.myForm.submit()">' in response.text
+            or '<body onLoad="submitForm()">' in response.text
+        ):
             # Pretend we're a JavaScript client
             response = submit_form(client.session, response)
 
-        response = submit_form(client.session, response, {
-            'ssousername': auth.username,
-            'password': auth.password
-        })
+        response = submit_form(
+            client.session,
+            response,
+            {'ssousername': auth.username, 'password': auth.password},
+        )
 
         client.save_cookies()
 
@@ -80,7 +90,9 @@ def cli(ctx, base_url, email, password):
             email, password = get_credentials(base_url)
 
             if not email or not password:
-                raise click.ClickException('Authentication not configured. Run `goji login`.')
+                raise click.ClickException(
+                    'Authentication not configured. Run `goji login`.'
+                )
 
             ctx.obj = JIRAClient(base_url, auth=(email, password))
 
@@ -226,7 +238,9 @@ def edit(client, issue_key):
     if description is not None and description.strip() != issue.description.strip():
         try:
             client.edit_issue(issue_key, {'description': description.strip()})
-            click.echo('Okay, the description for {} has been updated.'.format(issue_key))
+            click.echo(
+                'Okay, the description for {} has been updated.'.format(issue_key)
+            )
         except Exception as e:
             click.echo('There was an issue saving the new description:')
             click.echo(description)
@@ -263,7 +277,7 @@ def create(client, project, summary, type, component, label, priority, descripti
         fields = {
             'summary': summary,
             'description': description,
-            'project': {'key': project}
+            'project': {'key': project},
         }
 
         if len(component) > 0:

@@ -1,8 +1,7 @@
-import unittest
 import datetime
+import unittest
 
 from goji.client import JIRAClient, JIRAException
-
 from tests.server import ServerTestCase
 
 
@@ -13,14 +12,15 @@ class ClientTests(ServerTestCase):
 
     def test_post_400_error(self):
         self.server.response.status_code = 400
-        self.server.response.body = {
-            'errorMessages': ['Big Problem']
-        }
+        self.server.response.body = {'errorMessages': ['Big Problem']}
 
         with self.assertRaises(JIRAException):
-            self.client.post('path', {
-                'body': 'example',
-            })
+            self.client.post(
+                'path',
+                {
+                    'body': 'example',
+                },
+            )
 
     def test_post_404_error(self):
         self.server.response.status_code = 404
@@ -31,9 +31,12 @@ class ClientTests(ServerTestCase):
         }
 
         with self.assertRaises(JIRAException):
-            self.client.post('path', {
-                'body': 'example',
-            })
+            self.client.post(
+                'path',
+                {
+                    'body': 'example',
+                },
+            )
 
     def test_basic_authentication(self):
         self.server.response.body = {
@@ -47,8 +50,10 @@ class ClientTests(ServerTestCase):
 
         self.assertEqual(self.server.last_request.method, 'GET')
         self.assertEqual(self.server.last_request.path, '/rest/api/2/myself')
-        self.assertEqual(self.server.last_request.headers.get('Authorization'),
-                         'Basic dXNlcm5hbWU6cGFzc3dvcmQ=')
+        self.assertEqual(
+            self.server.last_request.headers.get('Authorization'),
+            'Basic dXNlcm5hbWU6cGFzc3dvcmQ=',
+        )
 
     def test_cookie_authentication(self):
         self.server.response.body = {
@@ -88,7 +93,7 @@ class ClientTests(ServerTestCase):
                 'status': {
                     'id': 1,
                     'name': 'open',
-                }
+                },
             },
         }
         issue = self.client.get_issue('GOJI-13')
@@ -99,14 +104,7 @@ class ClientTests(ServerTestCase):
         self.assertEqual(self.server.last_request.path, '/rest/api/2/issue/GOJI-13')
 
     def test_get_issue_transitions(self):
-        self.server.response.body = {
-            'transitions': [
-                {
-                    'id': 1,
-                    'name': 'Close Issue'
-                }
-            ]
-        }
+        self.server.response.body = {'transitions': [{'id': 1, 'name': 'Close Issue'}]}
 
         transitions = self.client.get_issue_transitions('GOJI-13')
 
@@ -115,7 +113,9 @@ class ClientTests(ServerTestCase):
         self.assertEqual(transitions[0].name, 'Close Issue')
 
         self.assertEqual(self.server.last_request.method, 'GET')
-        self.assertEqual(self.server.last_request.path, '/rest/api/2/issue/GOJI-13/transitions')
+        self.assertEqual(
+            self.server.last_request.path, '/rest/api/2/issue/GOJI-13/transitions'
+        )
 
     def test_transition_issue(self):
         self.server.response.status_code = 204
@@ -123,7 +123,9 @@ class ClientTests(ServerTestCase):
         self.client.change_status('GOJI-14', 1)
 
         self.assertEqual(self.server.last_request.method, 'POST')
-        self.assertEqual(self.server.last_request.path, '/rest/api/2/issue/GOJI-14/transitions')
+        self.assertEqual(
+            self.server.last_request.path, '/rest/api/2/issue/GOJI-14/transitions'
+        )
         self.assertEqual(self.server.last_request.body, {'transition': {'id': 1}})
 
     def test_create_issue(self):
@@ -133,32 +135,43 @@ class ClientTests(ServerTestCase):
             'key': 'GOJI-14',
         }
 
-        issue = self.client.create_issue({
-            'summary': 'Test Creating Issues in JIRA Client',
-        })
+        issue = self.client.create_issue(
+            {
+                'summary': 'Test Creating Issues in JIRA Client',
+            }
+        )
 
         self.assertEqual(issue.key, 'GOJI-14')
 
         self.assertEqual(self.server.last_request.method, 'POST')
         self.assertEqual(self.server.last_request.path, '/rest/api/2/issue')
-        self.assertEqual(self.server.last_request.body, {
-            'fields': {
-                'summary': 'Test Creating Issues in JIRA Client',
-            }
-        })
+        self.assertEqual(
+            self.server.last_request.body,
+            {
+                'fields': {
+                    'summary': 'Test Creating Issues in JIRA Client',
+                }
+            },
+        )
 
     def test_edit_issue(self):
-        self.client.edit_issue('GOJI-15', {
-            'summary': 'Test Updating Issues in JIRA Client',
-        })
+        self.client.edit_issue(
+            'GOJI-15',
+            {
+                'summary': 'Test Updating Issues in JIRA Client',
+            },
+        )
 
         self.assertEqual(self.server.last_request.method, 'PUT')
         self.assertEqual(self.server.last_request.path, '/rest/api/2/issue/GOJI-15')
-        self.assertEqual(self.server.last_request.body, {
-            'fields': {
-                'summary': 'Test Updating Issues in JIRA Client',
-            }
-        })
+        self.assertEqual(
+            self.server.last_request.body,
+            {
+                'fields': {
+                    'summary': 'Test Updating Issues in JIRA Client',
+                }
+            },
+        )
 
     def test_assign(self):
         self.server.response.status_code = 204
@@ -166,8 +179,9 @@ class ClientTests(ServerTestCase):
         self.client.assign('GOJI-14', 'kyle')
 
         self.assertEqual(self.server.last_request.method, 'PUT')
-        self.assertEqual(self.server.last_request.path,
-                         '/rest/api/2/issue/GOJI-14/assignee')
+        self.assertEqual(
+            self.server.last_request.path, '/rest/api/2/issue/GOJI-14/assignee'
+        )
         self.assertEqual(self.server.last_request.body, {'name': 'kyle'})
 
     def test_comment(self):
@@ -187,11 +201,10 @@ class ClientTests(ServerTestCase):
         self.assertEqual(comment.author.name, 'Fred F. User')
 
         self.assertEqual(self.server.last_request.method, 'POST')
-        self.assertEqual(self.server.last_request.path,
-                         '/rest/api/2/issue/GOJI-14/comment')
-        self.assertEqual(self.server.last_request.body, {
-            'body': 'Hello World'
-        })
+        self.assertEqual(
+            self.server.last_request.path, '/rest/api/2/issue/GOJI-14/comment'
+        )
+        self.assertEqual(self.server.last_request.body, {'body': 'Hello World'})
 
     def test_search(self):
         self.server.response.body = {
@@ -201,11 +214,8 @@ class ClientTests(ServerTestCase):
                     'fields': {
                         'summary': 'Hello World',
                         'description': 'One\nTwo\nThree\n',
-                        'status': {
-                            'id': 1,
-                            'name': 'open'
-                        },
-                    }
+                        'status': {'id': 1, 'name': 'open'},
+                    },
                 }
             ],
         }
@@ -213,11 +223,8 @@ class ClientTests(ServerTestCase):
         issues = self.client.search('PROJECT = GOJI')
 
         self.assertEqual(self.server.last_request.method, 'POST')
-        self.assertEqual(self.server.last_request.path,
-                         '/rest/api/2/search')
-        self.assertEqual(self.server.last_request.body, {
-            'jql': 'PROJECT = GOJI'
-        })
+        self.assertEqual(self.server.last_request.path, '/rest/api/2/search')
+        self.assertEqual(self.server.last_request.body, {'jql': 'PROJECT = GOJI'})
 
         self.assertEqual(len(issues), 1)
         self.assertEqual(issues[0].key, 'GOJI-1')
@@ -233,10 +240,13 @@ class ClientTests(ServerTestCase):
         sprint = self.client.create_sprint(5, 'Testing Sprint #1')
 
         self.assertEqual(self.server.last_request.path, '/rest/agile/1.0/sprint')
-        self.assertEqual(self.server.last_request.body, {
-            'name': 'Testing Sprint #1',
-            'originBoardId': 5,
-        })
+        self.assertEqual(
+            self.server.last_request.body,
+            {
+                'name': 'Testing Sprint #1',
+                'originBoardId': 5,
+            },
+        )
 
     def test_create_sprint_start_end(self):
         self.server.response.status_code = 201
@@ -246,15 +256,21 @@ class ClientTests(ServerTestCase):
             'state': 'future',
         }
 
-        sprint = self.client.create_sprint(5, 'Testing Sprint #1',
-                                           datetime.datetime(2018, 1, 1),
-                                           datetime.datetime(2018, 6, 1))
+        sprint = self.client.create_sprint(
+            5,
+            'Testing Sprint #1',
+            datetime.datetime(2018, 1, 1),
+            datetime.datetime(2018, 6, 1),
+        )
 
         self.assertEqual(self.server.last_request.method, 'POST')
         self.assertEqual(self.server.last_request.path, '/rest/agile/1.0/sprint')
-        self.assertEqual(self.server.last_request.body, {
-            'name': 'Testing Sprint #1',
-            'originBoardId': 5,
-            'startDate': '2018-01-01T00:00:00',
-            'endDate': '2018-06-01T00:00:00',
-        })
+        self.assertEqual(
+            self.server.last_request.body,
+            {
+                'name': 'Testing Sprint #1',
+                'originBoardId': 5,
+                'startDate': '2018-01-01T00:00:00',
+                'endDate': '2018-06-01T00:00:00',
+            },
+        )

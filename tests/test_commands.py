@@ -6,7 +6,6 @@ from click.testing import CliRunner
 from goji.client import JIRAClient
 from goji.commands import cli
 from goji.models import Transition
-
 from tests.server import ServerTestCase
 
 
@@ -18,9 +17,11 @@ class TestClient(object):
         if issue_key == 'invalid':
             return []
         else:
-            return [Transition('31', 'Unstarted'),
-                    Transition('21', 'Going'),
-                    Transition('1', 'Done')]
+            return [
+                Transition('31', 'Unstarted'),
+                Transition('21', 'Going'),
+                Transition('1', 'Done'),
+            ]
 
     def change_status(self, issue_key, transition_id):
         pass
@@ -54,13 +55,17 @@ class CLITests(CommandTestCase):
     def test_providing_no_credentials(self):
         result = self.invoke('whoami', client=None)
 
-        self.assertEqual(result.output, 'Error: Authentication not configured. Run `goji login`.\n')
+        self.assertEqual(
+            result.output, 'Error: Authentication not configured. Run `goji login`.\n'
+        )
         self.assertEqual(result.exit_code, 1)
 
     def test_providing_email_password(self):
         self.server.set_user_response()
 
-        result = self.invoke('--email', 'kyle@example.com', '--password', 'pass', 'whoami', client=None)
+        result = self.invoke(
+            '--email', 'kyle@example.com', '--password', 'pass', 'whoami', client=None
+        )
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Kyle Fuller (kyle)\n')
@@ -71,7 +76,9 @@ class CLITests(CommandTestCase):
 
         result = self.invoke('--email', 'kyle@example.com', 'whoami', client=None)
 
-        self.assertEqual(result.output, 'Error: Email/password must be provided together.\n')
+        self.assertEqual(
+            result.output, 'Error: Email/password must be provided together.\n'
+        )
         self.assertEqual(result.exit_code, 1)
 
     def test_providing_password_no_email(self):
@@ -79,7 +86,9 @@ class CLITests(CommandTestCase):
 
         result = self.invoke('--password', 'pass', 'whoami', client=None)
 
-        self.assertEqual(result.output, 'Error: Email/password must be provided together.\n')
+        self.assertEqual(
+            result.output, 'Error: Email/password must be provided together.\n'
+        )
         self.assertEqual(result.exit_code, 1)
 
 
@@ -91,11 +100,15 @@ class LoginCommandTests(CommandTestCase):
             result = self.invoke('login', client=None, input='email\npassword\n')
 
             with open(os.path.expanduser('~/.netrc')) as fp:
-                self.assertEqual(fp.read(), 'machine 127.0.0.1\n  login email\n  password password')
+                self.assertEqual(
+                    fp.read(), 'machine 127.0.0.1\n  login email\n  password password'
+                )
 
         self.assertEqual(result.exit_code, 0)
-        self.assertEqual(self.server.last_request.headers['Authorization'],
-                         'Basic ZW1haWw6cGFzc3dvcmQ=')
+        self.assertEqual(
+            self.server.last_request.headers['Authorization'],
+            'Basic ZW1haWw6cGFzc3dvcmQ=',
+        )
 
     def test_login_incorret_credentials(self):
         self.server.set_error_response(401, 'Authorization')
@@ -103,7 +116,9 @@ class LoginCommandTests(CommandTestCase):
 
         result = self.invoke('login', client=None, input='email\npassword\n')
 
-        self.assertTrue('Error: Incorrect credentials. Try `goji login`.' in result.output)
+        self.assertTrue(
+            'Error: Incorrect credentials. Try `goji login`.' in result.output
+        )
         self.assertEqual(result.exit_code, 1)
 
 
@@ -191,35 +206,50 @@ class ChangeStatusCommandTests(unittest.TestCase):
         args = ['--base-url=https://example.com', 'change-status', 'invalid']
         result = runner.invoke(cli, args, obj=TestClient())
         self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Fetching possible transitions...\nNo transitions found for invalid\n')
+        self.assertEqual(
+            result.output,
+            'Fetching possible transitions...\nNo transitions found for invalid\n',
+        )
 
     def test_change_status_valid_issue_key_invalid_input(self):
         runner = CliRunner()
         args = ['--base-url=https://example.com', 'change-status', 'GOJI-311']
         result = runner.invoke(cli, args, obj=TestClient(), input='3\n')
         self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Fetching possible transitions...\n0: Unstarted\n1: Going\n2: Done\nSelect a transition: 3\nNo transitions match "3"\n')
+        self.assertEqual(
+            result.output,
+            'Fetching possible transitions...\n0: Unstarted\n1: Going\n2: Done\nSelect a transition: 3\nNo transitions match "3"\n',
+        )
 
     def test_change_status_valid_issue_key_valid_input(self):
         runner = CliRunner()
         args = ['--base-url=https://example.com', 'change-status', 'GOJI-311']
         result = runner.invoke(cli, args, obj=TestClient(), input='1\n')
         self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Fetching possible transitions...\n0: Unstarted\n1: Going\n2: Done\nSelect a transition: 1\nOkay, the status for GOJI-311 is now "Going".\n')
+        self.assertEqual(
+            result.output,
+            'Fetching possible transitions...\n0: Unstarted\n1: Going\n2: Done\nSelect a transition: 1\nOkay, the status for GOJI-311 is now "Going".\n',
+        )
 
     def test_change_status_specify_invalid_status_name(self):
         runner = CliRunner()
         args = ['--base-url=https://example.com', 'change-status', 'GOJI-311', 'foo']
         result = runner.invoke(cli, args, obj=TestClient())
         self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Fetching possible transitions...\nNo transitions match "foo"\n')
+        self.assertEqual(
+            result.output,
+            'Fetching possible transitions...\nNo transitions match "foo"\n',
+        )
 
     def test_change_status_specify_valid_status_name(self):
         runner = CliRunner()
         args = ['--base-url=https://example.com', 'change-status', 'GOJI-311', 'done']
         result = runner.invoke(cli, args, obj=TestClient())
         self.assertIsNone(result.exception)
-        self.assertEqual(result.output, 'Fetching possible transitions...\nOkay, the status for GOJI-311 is now "Done".\n')
+        self.assertEqual(
+            result.output,
+            'Fetching possible transitions...\nOkay, the status for GOJI-311 is now "Done".\n',
+        )
 
 
 class SearchCommandTests(CommandTestCase):
@@ -293,7 +323,10 @@ class CommentCommandTests(CommandTestCase):
 
         result = self.invoke('comment', 'GOJI-311', '-m', 'My short one-line comment')
 
-        self.assertEqual(result.output, 'Comment:\n\nMy short one-line comment\n\nIssue Does Not Exist\n')
+        self.assertEqual(
+            result.output,
+            'Comment:\n\nMy short one-line comment\n\nIssue Does Not Exist\n',
+        )
         self.assertEqual(result.exit_code, 1)
 
 
@@ -303,7 +336,9 @@ class NewCommandTests(CommandTestCase):
 
         result = self.invoke('create', 'GOJI', 'Sprint #1', '--description', 'Desc')
 
-        self.assertEqual(result.output, "Description:\n\nDesc\n\nField 'priority' is required\n")
+        self.assertEqual(
+            result.output, "Description:\n\nDesc\n\nField 'priority' is required\n"
+        )
         self.assertEqual(result.exit_code, 1)
 
     def test_new_title_description(self):
@@ -311,11 +346,16 @@ class NewCommandTests(CommandTestCase):
 
         result = self.invoke('create', 'GOJI', 'Sprint #1', '--description', 'Desc')
 
-        self.assertEqual(self.server.last_request.body, {'fields': {
-            'description': 'Desc',
-            'project': {'key': 'GOJI'},
-            'summary': 'Sprint #1',
-        }})
+        self.assertEqual(
+            self.server.last_request.body,
+            {
+                'fields': {
+                    'description': 'Desc',
+                    'project': {'key': 'GOJI'},
+                    'summary': 'Sprint #1',
+                }
+            },
+        )
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Issue GOJI-133 created\n')
@@ -324,17 +364,29 @@ class NewCommandTests(CommandTestCase):
     def test_new_specify_component(self):
         self.server.set_create_issue_response()
 
-        result = self.invoke('create', 'GOJI', 'Sprint #1', '--component', 'client', '-c', 'api', '--description', 'Desc')
+        result = self.invoke(
+            'create',
+            'GOJI',
+            'Sprint #1',
+            '--component',
+            'client',
+            '-c',
+            'api',
+            '--description',
+            'Desc',
+        )
 
-        self.assertEqual(self.server.last_request.body, {'fields': {
-            'description': 'Desc',
-            'project': {'key': 'GOJI'},
-            'summary': 'Sprint #1',
-            'components': [
-                {'name': 'client'},
-                {'name': 'api'}
-            ],
-        }})
+        self.assertEqual(
+            self.server.last_request.body,
+            {
+                'fields': {
+                    'description': 'Desc',
+                    'project': {'key': 'GOJI'},
+                    'summary': 'Sprint #1',
+                    'components': [{'name': 'client'}, {'name': 'api'}],
+                }
+            },
+        )
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Issue GOJI-133 created\n')
@@ -343,17 +395,29 @@ class NewCommandTests(CommandTestCase):
     def test_new_specify_label(self):
         self.server.set_create_issue_response()
 
-        result = self.invoke('create', 'GOJI', 'Sprint #1', '--label', 'api', '--label', 'cli', '--description', 'Desc')
+        result = self.invoke(
+            'create',
+            'GOJI',
+            'Sprint #1',
+            '--label',
+            'api',
+            '--label',
+            'cli',
+            '--description',
+            'Desc',
+        )
 
-        self.assertEqual(self.server.last_request.body, {'fields': {
-            'description': 'Desc',
-            'project': {'key': 'GOJI'},
-            'summary': 'Sprint #1',
-            'labels': [
-                'api',
-                'cli'
-            ],
-        }})
+        self.assertEqual(
+            self.server.last_request.body,
+            {
+                'fields': {
+                    'description': 'Desc',
+                    'project': {'key': 'GOJI'},
+                    'summary': 'Sprint #1',
+                    'labels': ['api', 'cli'],
+                }
+            },
+        )
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Issue GOJI-133 created\n')
@@ -362,14 +426,21 @@ class NewCommandTests(CommandTestCase):
     def test_new_specify_type(self):
         self.server.set_create_issue_response()
 
-        result = self.invoke('create', 'GOJI', 'Sprint #1', '--type', 'Bug', '--description', 'Desc')
+        result = self.invoke(
+            'create', 'GOJI', 'Sprint #1', '--type', 'Bug', '--description', 'Desc'
+        )
 
-        self.assertEqual(self.server.last_request.body, {'fields': {
-            'description': 'Desc',
-            'issuetype': {'name': 'Bug'},
-            'project': {'key': 'GOJI'},
-            'summary': 'Sprint #1',
-        }})
+        self.assertEqual(
+            self.server.last_request.body,
+            {
+                'fields': {
+                    'description': 'Desc',
+                    'issuetype': {'name': 'Bug'},
+                    'project': {'key': 'GOJI'},
+                    'summary': 'Sprint #1',
+                }
+            },
+        )
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Issue GOJI-133 created\n')
@@ -378,14 +449,21 @@ class NewCommandTests(CommandTestCase):
     def test_new_specify_priority(self):
         self.server.set_create_issue_response()
 
-        result = self.invoke('create', 'GOJI', 'Sprint #1', '--priority', 'hot', '--description', 'Desc')
+        result = self.invoke(
+            'create', 'GOJI', 'Sprint #1', '--priority', 'hot', '--description', 'Desc'
+        )
 
-        self.assertEqual(self.server.last_request.body, {'fields': {
-            'description': 'Desc',
-            'project': {'key': 'GOJI'},
-            'priority': {'name': 'hot'},
-            'summary': 'Sprint #1',
-        }})
+        self.assertEqual(
+            self.server.last_request.body,
+            {
+                'fields': {
+                    'description': 'Desc',
+                    'project': {'key': 'GOJI'},
+                    'priority': {'name': 'hot'},
+                    'summary': 'Sprint #1',
+                }
+            },
+        )
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Issue GOJI-133 created\n')
@@ -405,7 +483,16 @@ class CreateSprintTests(CommandTestCase):
     def test_creating_sprint_with_date(self):
         self.server.set_create_sprint_response()
 
-        result = self.invoke('sprint', 'create', '1', 'Sprint #1', '--start', '10/01/18', '--end', '20/01/18')
+        result = self.invoke(
+            'sprint',
+            'create',
+            '1',
+            'Sprint #1',
+            '--start',
+            '10/01/18',
+            '--end',
+            '20/01/18',
+        )
 
         self.assertIsNone(result.exception)
         self.assertEqual(result.output, 'Sprint created\n')
@@ -414,6 +501,15 @@ class CreateSprintTests(CommandTestCase):
     def test_creating_sprint_with_invalid_date(self):
         self.server.set_create_sprint_response()
 
-        result = self.invoke('sprint', 'create', '1', 'Sprint #1', '--start', '10/13/18', '--end', '20/01/18')
+        result = self.invoke(
+            'sprint',
+            'create',
+            '1',
+            'Sprint #1',
+            '--start',
+            '10/13/18',
+            '--end',
+            '20/01/18',
+        )
 
         self.assertEqual(result.exit_code, 2)

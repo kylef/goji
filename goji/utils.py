@@ -1,5 +1,6 @@
-from click import ParamType
 from datetime import datetime
+
+from click import ParamType
 
 
 class Datetime(ParamType):
@@ -15,5 +16,12 @@ class Datetime(ParamType):
         try:
             return datetime.strptime(value, self.format)
         except ValueError as e:
-            self.fail('Could not parse datetime string "{datetime_str}" formatted as {format} ({ex})'.format(
-                datetime_str=value, format=self.format, ex=e,), param, ctx)
+            self.fail(
+                'Could not parse datetime string "{datetime_str}" formatted as {format} ({ex})'.format(
+                    datetime_str=value,
+                    format=self.format,
+                    ex=e,
+                ),
+                param,
+                ctx,
+            )
