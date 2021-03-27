@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "goji"
+version = "0.3.1"
+description = "Command line JIRA client"
+authors = ["Kyle Fuller <kyle@fuller.li>"]
+license = "BSD"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+click = "^7.1.2"
+six = "^1.15.0"
+requests-html = "^0.10.0"
+requests = {extras = ["socks"], version = "^2.25.1"}
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+goji = 'goji.commands:cli'
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
