@@ -19,8 +19,28 @@ $ pip install goji
 ## Configuration
 
 Once installed, goji requires the base URL of your Atlassian suite to be
-configured to run commands. It can be specified as a command argument or as an
-environment variable.
+configured to run commands. There are a few ways to configured goji.
+
+### Configuration File
+
+The `~/.config/goji/config.toml` file can be configured, by setting profiles
+for different JIRA instances. For example:
+
+```toml
+[profile.default]
+url = "https://goji.atlassian.net"
+email = "kyle@fuller.li"
+```
+
+Then:
+
+```shell
+$  export GOJI_PASSWORD='my password'
+$ goji whoami
+```
+
+### Without Configuration File
+
 
 ```bash
 $ export GOJI_BASE_URL=https://example.atlassian.net

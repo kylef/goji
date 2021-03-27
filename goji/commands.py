@@ -7,6 +7,7 @@ from requests.compat import urljoin
 
 from goji.auth import get_credentials, set_credentials
 from goji.client import JIRAClient
+from goji.config import Configuration
 from goji.utils import Datetime
 
 
@@ -78,18 +79,37 @@ def check_login(client) -> None:
 
 
 @click.group()
-@click.option('--base-url', envvar='GOJI_BASE_URL', required=True)
+@click.option('--profile', default='default')
+@click.option('--base-url', envvar='GOJI_BASE_URL')
 @click.option('--email', envvar='GOJI_EMAIL', default=None)
 @click.option('--password', envvar='GOJI_PASSWORD', default=None)
 @click.pass_context
-def cli(ctx, base_url: str, email: Optional[str], password: Optional[str]) -> None:
+def cli(ctx, profile: str, base_url: str, email: Optional[str], password: Optional[str]) -> None:
+    config = Configuration.load()
+    p = config.profiles.get(profile.lower())
+
+    if p:
+        if not base_url:
+            base_url = p.url
+
+        if p.email and not email:
+            email = p.email
+
+    if not p and profile != 'default':
+        raise click.ClickException(f'Profile {profile} not found')
+
+    if not base_url:
+        raise click.ClickException('JIRA base URL is not configured')
+
     if not ctx.obj:
         if ctx.invoked_subcommand == 'login':
             ctx.obj = base_url
         elif email and password:
             ctx.obj = JIRAClient(base_url, auth=(email, password))
-        elif email or password:
-            raise click.ClickException('Email/password must be provided together.')
+        elif email and not password:
+            raise click.ClickException('Password is not configured.')
+        elif not email and password:
+            raise click.ClickException('Email is not configured.')
         else:
             email, password = get_credentials(base_url)
 

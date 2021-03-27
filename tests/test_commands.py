@@ -7,7 +7,7 @@ from tests.server import JIRAServer
 def test_error_without_base_url(runner: CliRunner) -> None:
     result = runner.invoke(cli, ['open'])
 
-    assert "Error: Missing option '--base-url'" in result.output
+    assert "Error: JIRA base URL is not configured" in result.output
     assert result.exit_code != 0
 
 
@@ -35,7 +35,7 @@ def test_providing_email_no_password(invoke, server: JIRAServer) -> None:
 
     result = invoke('--email', 'kyle@example.com', 'whoami', client=None)
 
-    assert result.output == 'Error: Email/password must be provided together.\n'
+    assert result.output == 'Error: Password is not configured.\n'
     assert result.exit_code == 1
 
 
@@ -44,5 +44,5 @@ def test_providing_password_no_email(invoke, server: JIRAServer) -> None:
 
     result = invoke('--password', 'pass', 'whoami', client=None)
 
-    assert result.output == 'Error: Email/password must be provided together.\n'
+    assert result.output == 'Error: Email is not configured.\n'
     assert result.exit_code == 1

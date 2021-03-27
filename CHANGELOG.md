@@ -13,6 +13,8 @@
   `--password` options, or alternatively the `GOJI_EMAIL` and `GOJI_PASSWORD`
   environment variables.
 
+- Support for profiles and configuration files.
+
 ## 0.3.1
 
 ### Bug Fixes
