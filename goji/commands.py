@@ -1,6 +1,8 @@
 import sys
+from typing import Optional
 
 import click
+import requests
 from requests.compat import urljoin
 
 from goji.auth import get_credentials, set_credentials
@@ -8,7 +10,9 @@ from goji.client import JIRAClient
 from goji.utils import Datetime
 
 
-def submit_form(session, response, data=None):
+def submit_form(
+    session: requests.Session, response: requests.Response, data=None
+) -> requests.Response:
     from requests_html import HTML
 
     html = HTML(url=response.url, html=response.text)
@@ -34,7 +38,7 @@ def submit_form(session, response, data=None):
     return response
 
 
-def check_login(client):
+def check_login(client) -> None:
     response = client.get('myself', allow_redirects=False)
 
     if response.status_code == 302:
@@ -78,7 +82,7 @@ def check_login(client):
 @click.option('--email', envvar='GOJI_EMAIL', default=None)
 @click.option('--password', envvar='GOJI_PASSWORD', default=None)
 @click.pass_context
-def cli(ctx, base_url, email, password):
+def cli(ctx, base_url: str, email: Optional[str], password: Optional[str]) -> None:
     if not ctx.obj:
         if ctx.invoked_subcommand == 'login':
             ctx.obj = base_url
@@ -102,7 +106,7 @@ def cli(ctx, base_url, email, password):
 
 @cli.command('whoami')
 @click.pass_obj
-def whoami(client):
+def whoami(client: JIRAClient) -> None:
     """View information regarding current user"""
     user = client.get_user()
     click.echo(user)
@@ -111,7 +115,7 @@ def whoami(client):
 @click.argument('issue_key')
 @cli.command('open')
 @click.pass_obj
-def open_command(client, issue_key):
+def open_command(client: JIRAClient, issue_key: str) -> None:
     """Open issue in a web browser"""
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
     click.launch(url)
@@ -120,7 +124,7 @@ def open_command(client, issue_key):
 @click.argument('issue_key')
 @cli.command()
 @click.pass_obj
-def show(client, issue_key):
+def show(client: JIRAClient, issue_key: str) -> None:
     """Print issue contents"""
     issue = client.get_issue(issue_key)
     url = urljoin(client.base_url, 'browse/%s' % issue_key)
@@ -150,7 +154,7 @@ def show(client, issue_key):
 @click.argument('issue_key')
 @cli.command()
 @click.pass_obj
-def assign(client, issue_key, user):
+def assign(client: JIRAClient, issue_key: str, user: Optional[str]) -> None:
     """Assign an issue to a user"""
 
     if user is None:
@@ -163,7 +167,7 @@ def assign(client, issue_key, user):
 @click.argument('issue_key')
 @cli.command()
 @click.pass_obj
-def unassign(client, issue_key):
+def unassign(client: JIRAClient, issue_key: str) -> None:
     """Unassign an issue"""
 
     client.assign(issue_key, None)
@@ -174,7 +178,7 @@ def unassign(client, issue_key):
 @click.argument('issue_key')
 @cli.command('change-status')
 @click.pass_obj
-def change_status(client, issue_key, status):
+def change_status(client: JIRAClient, issue_key: str, status: Optional[str]) -> None:
     """Change the status of an issue"""
     click.echo('Fetching possible transitions...')
     transitions = client.get_issue_transitions(issue_key)
@@ -207,7 +211,7 @@ def change_status(client, issue_key, status):
 @click.argument('issue_key')
 @cli.command()
 @click.pass_obj
-def comment(client, message, issue_key):
+def comment(client: JIRAClient, message: Optional[str], issue_key: str) -> None:
     """Comment on an issue"""
 
     if not message:
@@ -230,11 +234,12 @@ def comment(client, message, issue_key):
 @click.argument('issue_key')
 @cli.command()
 @click.pass_obj
-def edit(client, issue_key):
+def edit(client: JIRAClient, issue_key: str) -> None:
     """Edit issue description"""
     issue = client.get_issue(issue_key)
     description = click.edit(issue.description)
 
+    assert issue.description
     if description is not None and description.strip() != issue.description.strip():
         try:
             client.edit_issue(issue_key, {'description': description.strip()})
@@ -304,7 +309,7 @@ def create(client, project, summary, type, component, label, priority, descripti
 
 @cli.command()
 @click.pass_obj
-def login(base_url):
+def login(base_url: str) -> None:
     """Authenticate with JIRA server"""
     email, password = get_credentials(base_url)
     if email is not None:
@@ -325,7 +330,7 @@ def login(base_url):
 @click.option('--format', default='{key} {summary}')
 @cli.command()
 @click.pass_obj
-def search(client, format, query):
+def search(client: JIRAClient, format: str, query: str) -> None:
     """Search issues using JQL"""
 
     issues = client.search(query)
@@ -347,7 +352,7 @@ def search(client, format, query):
 
 
 @cli.group('sprint')
-def sprint():
+def sprint() -> None:
     pass
 
 
@@ -357,7 +362,7 @@ def sprint():
 @click.option('--start', type=Datetime(format='%d/%m/%y'), default=None)
 @click.option('--end', type=Datetime(format='%d/%m/%y'), default=None)
 @click.pass_obj
-def sprint_create(client, board_id, name, start, end):
+def sprint_create(client: JIRAClient, board_id: int, name: str, start, end) -> None:
     """Create a sprint"""
 
     client.create_sprint(board_id, name, start_date=start, end_date=end)

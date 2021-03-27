@@ -4,7 +4,7 @@ from goji.models import Transition
 
 
 class TransitionTests(unittest.TestCase):
-    def test_transition_creation_from_json(self):
+    def test_transition_creation_from_json(self) -> None:
         json = {
             'to': {
                 'statusCategory': {
@@ -26,5 +26,5 @@ class TransitionTests(unittest.TestCase):
         }
         transition = Transition.from_json(json)
 
-        self.assertEqual(transition.name, 'In Progress')
-        self.assertEqual(transition.id, '21')
+        assert transition.name == 'In Progress'
+        assert transition.id == '21'

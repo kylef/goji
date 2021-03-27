@@ -1,5 +1,4 @@
 import datetime
-import unittest
 
 from goji.client import JIRAClient, JIRAException
 from tests.server import ServerTestCase

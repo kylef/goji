@@ -3,11 +3,12 @@ from netrc import netrc
 from os import chmod, path
 from stat import S_IRUSR, S_IWUSR
 from textwrap import dedent
+from typing import Optional, Tuple
 
 from requests.compat import urlparse
 
 
-def get_credentials(base_url):
+def get_credentials(base_url: str) -> Tuple[Optional[str], Optional[str]]:
     hostname = urlparse(base_url).hostname
     try:
         hosts = netrc().hosts
@@ -19,7 +20,7 @@ def get_credentials(base_url):
     return (None, None)
 
 
-def set_credentials(base_url, email, password):
+def set_credentials(base_url: str, email, password) -> None:
     hostname = urlparse(base_url).hostname
     filepath = path.expanduser('~/.netrc')
     if path.isfile(filepath):

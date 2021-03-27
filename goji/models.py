@@ -1,25 +1,30 @@
+from typing import Any, Dict, List, Optional
+
+
 class Model(object):
     pass
 
 
 class User(Model):
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Any]) -> Optional['User']:
         if json:
             return cls(json['name'], json['displayName'], json.get('emailAddress'))
 
-    def __init__(self, username, name, email=None):
+        return None
+
+    def __init__(self, username: str, name: str, email: Optional[str] = None):
         self.username = username
         self.name = name
         self.email = email
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '{} ({})'.format(self.name, self.username)
 
 
 class Issue(Model):
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Any]) -> 'Issue':
         issue = cls(json['key'])
 
         if 'fields' in json:
@@ -49,13 +54,16 @@ class Issue(Model):
 
         return issue
 
-    def __init__(self, key):
+    def __init__(self, key: str):
         self.key = key
         self.summary = None
         self.description = None
-        self.creator = None
-        self.assignee = None
-        self.status = None
+        self.creator: Optional[User] = None
+        self.assignee: Optional[User] = None
+        self.status: Optional['Status'] = None
+        self.resolution: Optional[Resolution] = None
+        self.links: List['IssueLink'] = []
+        self.customfields: Dict[str, Any] = {}
 
     def __str__(self):
         return self.key
@@ -63,10 +71,10 @@ class Issue(Model):
 
 class IssueLinkType(Model):
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Any]) -> 'IssueLinkType':
         return cls(json['name'], json['inward'], json['outward'])
 
-    def __init__(self, name, inward, outward):
+    def __init__(self, name: str, inward: str, outward: str):
         self.name = name
         self.inward = inward
         self.outward = outward
@@ -74,7 +82,7 @@ class IssueLinkType(Model):
 
 class IssueLink(Model):
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Any]) -> 'IssueLink':
         link_type = IssueLinkType.from_json(json['type'])
         issue_link = cls(link_type)
 
@@ -86,18 +94,25 @@ class IssueLink(Model):
 
         return issue_link
 
-    def __init__(self, link_type, inward_issue=None, outward_issue=None):
+    def __init__(
+        self,
+        link_type: IssueLinkType,
+        inward_issue: Optional[Issue] = None,
+        outward_issue: Optional[Issue] = None,
+    ):
         self.link_type = link_type
         self.inward_issue = inward_issue
         self.outward_issue = outward_issue
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.outward_issue:
             direction = self.link_type.outward.capitalize()
             issue = self.outward_issue
         elif self.inward_issue:
             direction = self.link_type.inward.capitalize()
             issue = self.inward_issue
+        else:
+            raise Exception('IssueLink is missing outward or inward issue')
 
         return '{direction}: {issue.key} ({issue.status})'.format(
             direction=direction, issue=issue
@@ -106,20 +121,20 @@ class IssueLink(Model):
 
 class Transition(Model):
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Any]) -> 'Transition':
         return cls(json['id'], json['name'])
 
-    def __init__(self, identifier, name):
+    def __init__(self, identifier: str, name: str):
         self.id = identifier
         self.name = name
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
 class Comment(Model):
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Any]) -> 'Comment':
         comment = cls(json['id'], json['body'])
 
         if 'author' in json:
@@ -127,54 +142,54 @@ class Comment(Model):
 
         return comment
 
-    def __init__(self, identifier, message):
+    def __init__(self, identifier: str, message: str):
         self.id = identifier
         self.message = message
-        self.author = None
+        self.author: Optional[User] = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.message
 
 
 class Sprint(Model):
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Any]) -> 'Sprint':
         return cls(json['id'], json['name'], json['state'])
 
-    def __init__(self, identifier, name, state):
+    def __init__(self, identifier: str, name: str, state):
         self.id = identifier
         self.name = name
         self.state = state
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
 class Status(Model):
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Any]) -> 'Status':
         return cls(json['id'], json['name'], json.get('description', None))
 
-    def __init__(self, identifier, name, description):
+    def __init__(self, identifier: str, name: str, description: Optional[str] = None):
         self.id = identifier
         self.name = name
         self.description = description
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
 class Resolution(Model):
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Any]) -> 'Resolution':
         return cls(json['id'], json['name'], json.get('description', None))
 
-    def __init__(self, identifier, name, description):
+    def __init__(self, identifier: str, name: str, description: Optional[str]):
         self.id = identifier
         self.name = name
         self.description = description
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 

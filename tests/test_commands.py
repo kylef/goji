@@ -1,5 +1,6 @@
 import os
 import unittest
+from typing import List
 
 from click.testing import CliRunner
 
@@ -13,7 +14,7 @@ class TestClient(object):
     base_url = 'https://goji.example.com/'
     username = 'kyle'
 
-    def get_issue_transitions(self, issue_key):
+    def get_issue_transitions(self, issue_key: str) -> List[Transition]:
         if issue_key == 'invalid':
             return []
         else:
@@ -23,12 +24,12 @@ class TestClient(object):
                 Transition('1', 'Done'),
             ]
 
-    def change_status(self, issue_key, transition_id):
+    def change_status(self, issue_key: str, transition_id: str) -> None:
         pass
 
 
 class CommandTestCase(ServerTestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         super(CommandTestCase, self).setUp()
         self.runner = CliRunner()
 
@@ -45,20 +46,20 @@ class CommandTestCase(ServerTestCase):
 
 
 class CLITests(CommandTestCase):
-    def test_error_without_base_url(self):
+    def test_error_without_base_url(self) -> None:
         runner = CliRunner()
         result = runner.invoke(cli, ['open'])
 
         assert "Error: Missing option '--base-url'" in result.output
-        self.assertNotEqual(result.exit_code, 0)
+        assert result.exit_code != 0
 
-    def test_providing_no_credentials(self):
+    def test_providing_no_credentials(self) -> None:
         result = self.invoke('whoami', client=None)
 
         self.assertEqual(
             result.output, 'Error: Authentication not configured. Run `goji login`.\n'
         )
-        self.assertEqual(result.exit_code, 1)
+        assert result.exit_code == 1
 
     def test_providing_email_password(self):
         self.server.set_user_response()
@@ -123,7 +124,7 @@ class LoginCommandTests(CommandTestCase):
 
 
 class ShowCommandTests(CommandTestCase):
-    def test_show__without_issue_key(self):
+    def test_show__without_issue_key(self) -> None:
         result = self.invoke('show')
 
         assert "Error: Missing argument 'ISSUE_KEY'" in result.output
@@ -134,8 +135,6 @@ class ShowCommandTests(CommandTestCase):
 
         result = self.invoke('show', 'GOJI-1')
         output = result.output.replace(self.server.url, 'https://example.com')
-
-        print(result.output)
 
         expected = '''-> GOJI-1
   Example Issue
@@ -148,8 +147,8 @@ class ShowCommandTests(CommandTestCase):
   - URL: https://example.com/browse/GOJI-1
 '''
 
-        self.assertEqual(output, expected)
-        self.assertEqual(result.exit_code, 0)
+        assert output == expected
+        assert result.exit_code == 0
 
 
 class AssignCommandTests(CommandTestCase):

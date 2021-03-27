@@ -1,5 +1,7 @@
+import datetime
 import os
 import pickle
+from typing import Any, List, Optional
 
 import click
 import requests
@@ -10,7 +12,7 @@ from goji.models import Comment, Issue, Sprint, Transition, User
 
 
 class JIRAException(click.ClickException):
-    def __init__(self, error_messages, errors):
+    def __init__(self, error_messages: List[str], errors):
         self.error_messages = error_messages
         self.errors = errors
 
@@ -46,7 +48,7 @@ class JIRAAuth(HTTPBasicAuth):
 
 
 class JIRAClient(object):
-    def __init__(self, base_url, auth=None):
+    def __init__(self, base_url: str, auth=None):
         self.session = requests.Session()
         self.base_url = base_url
         self.rest_base_url = urljoin(self.base_url, 'rest/api/2/')
@@ -61,18 +63,18 @@ class JIRAClient(object):
     # Persistent Cookie
 
     @property
-    def cookie_path(self):
+    def cookie_path(self) -> str:
         return os.path.expanduser('~/.goji/cookies')
 
-    def load_cookies(self):
+    def load_cookies(self) -> None:
         if os.path.exists(self.cookie_path):
             try:
                 with open(self.cookie_path, 'rb') as fp:
                     self.session.cookies = pickle.load(fp)
             except Exception as e:
-                print('warning: Could not load cookies from dist: ' + e)
+                print('warning: Could not load cookies from dist: {}'.format(e))
 
-    def save_cookies(self):
+    def save_cookies(self) -> None:
         cookies = self.session.cookies.keys()
         cookies.remove('atlassian.xsrf.token')
 
@@ -86,77 +88,85 @@ class JIRAClient(object):
 
     # Methods
 
-    def validate_response(self, response):
+    def validate_response(self, response: requests.Response) -> None:
         if response.status_code >= 400 and 'application/json' in response.headers.get(
             'Content-Type', ''
         ):
             error = response.json()
             raise JIRAException(error.get('errorMessages', []), error.get('errors', {}))
 
-    def get(self, path, **kwargs):
+    def get(self, path: str, **kwargs) -> requests.Response:
         url = urljoin(self.rest_base_url, path)
         response = self.session.get(url, **kwargs)
         self.validate_response(response)
         return response
 
-    def post(self, path, json):
+    def post(self, path: str, json) -> requests.Response:
         url = urljoin(self.rest_base_url, path)
         response = self.session.post(url, json=json)
         self.validate_response(response)
         return response
 
-    def put(self, path, json):
+    def put(self, path: str, json) -> requests.Response:
         url = urljoin(self.rest_base_url, path)
         response = self.session.put(url, json=json)
         self.validate_response(response)
         return response
 
     @property
-    def username(self):
+    def username(self) -> Optional[str]:
         if self.session.auth and isinstance(self.session.auth, JIRAAuth):
             return self.session.auth.username
 
-    def get_user(self):
+        return None
+
+    def get_user(self) -> Optional[User]:
         response = self.get('myself', allow_redirects=False)
         response.raise_for_status()
         return User.from_json(response.json())
 
-    def get_issue(self, issue_key):
+    def get_issue(self, issue_key: str) -> Issue:
         response = self.get('issue/%s' % issue_key)
         response.raise_for_status()
         return Issue.from_json(response.json())
 
-    def get_issue_transitions(self, issue_key):
+    def get_issue_transitions(self, issue_key: str) -> List[Transition]:
         response = self.get('issue/%s/transitions' % issue_key)
         response.raise_for_status()
         return list(map(Transition.from_json, response.json()['transitions']))
 
-    def change_status(self, issue_key, transition_id):
+    def change_status(self, issue_key: str, transition_id: str) -> None:
         data = {'transition': {'id': transition_id}}
         self.post('issue/%s/transitions' % issue_key, data)
 
-    def edit_issue(self, issue_key, updated_fields):
+    def edit_issue(self, issue_key: str, updated_fields) -> None:
         data = {'fields': updated_fields}
         self.put('issue/%s' % issue_key, data)
 
-    def create_issue(self, fields):
+    def create_issue(self, fields) -> Issue:
         response = self.post('issue', {'fields': fields})
         return Issue.from_json(response.json())
 
-    def assign(self, issue_key, name):
+    def assign(self, issue_key: str, name: Optional[str]) -> None:
         response = self.put('issue/%s/assignee' % issue_key, {'name': name})
         response.raise_for_status()
 
-    def comment(self, issue_key, comment):
+    def comment(self, issue_key: str, comment: str) -> Comment:
         response = self.post('issue/%s/comment' % issue_key, {'body': comment})
         return Comment.from_json(response.json())
 
-    def search(self, query):
+    def search(self, query: str) -> List[Issue]:
         response = self.post('search', {'jql': query})
         response.raise_for_status()
         return list(map(Issue.from_json, response.json()['issues']))
 
-    def create_sprint(self, board_id, name, start_date=None, end_date=None):
+    def create_sprint(
+        self,
+        board_id: int,
+        name: str,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+    ) -> Sprint:
         payload = {
             'originBoardId': board_id,
             'name': name,

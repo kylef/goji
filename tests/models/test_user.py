@@ -4,19 +4,20 @@ from goji.models import User
 
 
 class UserTests(unittest.TestCase):
-    def test_user_creation_from_json(self):
+    def test_user_creation_from_json(self) -> None:
         json = {
             'name': 'kyle',
-            'emailAddress': 'inbox@kylefuller.co.uk',
+            'emailAddress': 'kyle@example.com',
             'displayName': 'Kyle Fuller',
         }
 
         user = User.from_json(json)
 
-        self.assertEqual(user.username, 'kyle')
-        self.assertEqual(user.name, 'Kyle Fuller')
-        self.assertEqual(user.email, 'inbox@kylefuller.co.uk')
+        assert user
+        assert user.username == 'kyle'
+        assert user.name == 'Kyle Fuller'
+        assert user.email == 'kyle@example.com'
 
-    def test_string_conversion(self):
+    def test_string_conversion(self) -> None:
         user = User(username='kyle', name='Kyle Fuller')
-        self.assertEqual(str(user), 'Kyle Fuller (kyle)')
+        assert str(user) == 'Kyle Fuller (kyle)'

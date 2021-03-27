@@ -1,6 +1,7 @@
 import json
 import unittest
 from threading import Thread
+from typing import List, Optional
 
 from six.moves import BaseHTTPServer
 
@@ -19,7 +20,7 @@ class ServerTestCase(unittest.TestCase):
 
 
 class Request(object):
-    def __init__(self, method, path, headers, body):
+    def __init__(self, method: str, path: str, headers, body):
         self.method = method
         self.path = path
         self.headers = headers
@@ -27,7 +28,7 @@ class Request(object):
 
 
 class Response(object):
-    def __init__(self, status_code, body):
+    def __init__(self, status_code: int, body):
         self.status_code = status_code
         self.headers = {'Content-Type': 'application/json'}
         self.body = body
@@ -87,33 +88,33 @@ class JIRAServer(object):
         self.thread.start()
 
     @property
-    def address(self):
+    def address(self) -> str:
         return '{0}:{1}'.format(*self.server.server_address)
 
     @property
-    def url(self):
+    def url(self) -> str:
         return 'http://%s' % self.address
 
     @property
-    def last_request(self):
+    def last_request(self) -> Request:
         return self.requests[-1]
 
-    def reset(self):
-        self.requests = []
+    def reset(self) -> None:
+        self.requests: List[Request] = []
         self.response = Response(200, None)
-        self.require_method = None
-        self.require_path = None
+        self.require_method: Optional[str] = None
+        self.require_path: Optional[str] = None
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         self.server.shutdown()
         self.thread.join()
         self.server.server_close()
 
-    def set_error_response(self, status_code, error):
+    def set_error_response(self, status_code: int, error: str) -> None:
         self.response.status_code = status_code
         self.response.body = {'errorMessages': [error]}
 
-    def set_user_response(self):
+    def set_user_response(self) -> None:
         self.require_method = 'GET'
         self.require_path = '/rest/api/2/myself'
 
@@ -124,7 +125,7 @@ class JIRAServer(object):
             'emailAddress': 'kyle@example.com',
         }
 
-    def set_issue_response(self, issue_key='GOJI-1'):
+    def set_issue_response(self, issue_key: str = 'GOJI-1') -> None:
         self.require_method = 'GET'
         self.require_path = '/rest/api/2/issue/{}'.format(issue_key)
 
@@ -140,7 +141,7 @@ class JIRAServer(object):
             },
         }
 
-    def set_create_issue_response(self):
+    def set_create_issue_response(self) -> None:
         self.require_method = 'POST'
         self.require_path = '/rest/api/2/issue'
 
@@ -156,13 +157,13 @@ class JIRAServer(object):
             },
         }
 
-    def set_assign_response(self, issue_key):
+    def set_assign_response(self, issue_key: str) -> None:
         self.require_method = 'PUT'
         self.require_path = '/rest/api/2/issue/{}/assignee'.format(issue_key)
 
         self.response.status_code = 204
 
-    def set_comment_response(self, issue_key):
+    def set_comment_response(self, issue_key: str) -> None:
         self.require_method = 'POST'
         self.require_path = '/rest/api/2/issue/{}/comment'.format(issue_key)
 
@@ -177,7 +178,7 @@ class JIRAServer(object):
             'created': '2018-05-08T05:54:42.688+0000',
         }
 
-    def set_search_response(self):
+    def set_search_response(self) -> None:
         self.require_method = 'POST'
         self.require_path = '/rest/api/2/search'
 
@@ -197,7 +198,7 @@ class JIRAServer(object):
             ]
         }
 
-    def set_create_sprint_response(self):
+    def set_create_sprint_response(self) -> None:
         self.require_method = 'POST'
         self.require_path = '/rest/agile/1.0/sprint'
 
