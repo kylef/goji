@@ -293,7 +293,7 @@ def attach(client: JIRAClient, issue_key: str, attachments) -> None:
 
 @click.argument('summary')
 @click.argument('project', metavar='<key>')
-@click.option('--type', '-t')
+@click.option('--type', '-t', required=True)
 @click.option('--component', '-c', multiple=True, help='Adds a component')
 @click.option('--label', multiple=True, help='Adds a label')
 @click.option('--priority', '-p', help='Sets the issue priority')
