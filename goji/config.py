@@ -6,33 +6,30 @@ import toml
 from jsonschema import ValidationError, validate
 
 SCHEMA = {
-  'type': 'object',
-  'properties': {
-    'profile': { '$ref': '#/definitions/Profiles' },
-  },
-  'additionalProperties': False,
-  'definitions': {
-    'Profile': {
-      'type': 'object',
-      'properties': {
-        'url': {
-          'type': 'string',
-        },
-        'email': {
-          'type': 'string',
-        },
-      },
-      'required': ['url'],
-      'additionalProperties': False,
+    'type': 'object',
+    'properties': {
+        'profile': {'$ref': '#/definitions/Profiles'},
     },
-
-    'Profiles': {
-      'type': 'object',
-      'additionalProperties': {
-        '$ref': '#/definitions/Profile'
-      },
+    'additionalProperties': False,
+    'definitions': {
+        'Profile': {
+            'type': 'object',
+            'properties': {
+                'url': {
+                    'type': 'string',
+                },
+                'email': {
+                    'type': 'string',
+                },
+            },
+            'required': ['url'],
+            'additionalProperties': False,
+        },
+        'Profiles': {
+            'type': 'object',
+            'additionalProperties': {'$ref': '#/definitions/Profile'},
+        },
     },
-  },
 }
 
 
@@ -64,9 +61,7 @@ class Configuration:
             validate(instance=data, schema=SCHEMA)
         except ValidationError as exception:
             message = 'Invalid config in {}, at path /{}, {}'.format(
-                path,
-                '/'.join(exception.path),
-                exception.message
+                path, '/'.join(exception.path), exception.message
             )
             raise click.ClickException(message)
 

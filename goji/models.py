@@ -9,7 +9,9 @@ class User(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> Optional['User']:
         if json:
-            return cls(json.get('name') or '', json['displayName'], json.get('emailAddress'))
+            return cls(
+                json.get('name') or '', json['displayName'], json.get('emailAddress')
+            )
 
         return None
 

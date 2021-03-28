@@ -4,7 +4,7 @@ from tests.server import JIRAServer
 def test_create_issue_error(invoke, server: JIRAServer) -> None:
     server.set_error_response(400, "Field 'priority' is required")
 
-    result = invoke('create', 'GOJI', 'Sprint #1', '--description', 'Desc')
+    result = invoke('create', 'GOJI', 'Sprint #1', '-t', 'Bug', '--description', 'Desc')
 
     assert result.output == "Description:\n\nDesc\n\nField 'priority' is required\n"
     assert result.exit_code == 1
@@ -13,12 +13,13 @@ def test_create_issue_error(invoke, server: JIRAServer) -> None:
 def test_new_title_description(invoke, server: JIRAServer) -> None:
     server.set_create_issue_response()
 
-    result = invoke('create', 'GOJI', 'Sprint #1', '--description', 'Desc')
+    result = invoke('create', 'GOJI', 'Sprint #1', '-t', 'Bug', '--description', 'Desc')
 
     assert server.last_request.body == {
         'fields': {
             'description': 'Desc',
             'project': {'key': 'GOJI'},
+            'issuetype': {'name': 'Bug'},
             'summary': 'Sprint #1',
         }
     }
@@ -37,6 +38,8 @@ def test_new_specify_component(invoke, server: JIRAServer) -> None:
         'Sprint #1',
         '--component',
         'client',
+        '--type',
+        'Bug',
         '-c',
         'api',
         '--description',
@@ -47,6 +50,7 @@ def test_new_specify_component(invoke, server: JIRAServer) -> None:
         'fields': {
             'description': 'Desc',
             'project': {'key': 'GOJI'},
+            'issuetype': {'name': 'Bug'},
             'summary': 'Sprint #1',
             'components': [{'name': 'client'}, {'name': 'api'}],
         }
@@ -63,6 +67,8 @@ def test_new_specify_label(invoke, server: JIRAServer) -> None:
     result = invoke(
         'create',
         'GOJI',
+        '--type',
+        'Bug',
         'Sprint #1',
         '--label',
         'api',
@@ -76,6 +82,7 @@ def test_new_specify_label(invoke, server: JIRAServer) -> None:
         'fields': {
             'description': 'Desc',
             'project': {'key': 'GOJI'},
+            'issuetype': {'name': 'Bug'},
             'summary': 'Sprint #1',
             'labels': ['api', 'cli'],
         }
@@ -111,13 +118,22 @@ def test_new_specify_priority(invoke, server: JIRAServer) -> None:
     server.set_create_issue_response()
 
     result = invoke(
-        'create', 'GOJI', 'Sprint #1', '--priority', 'hot', '--description', 'Desc'
+        'create',
+        'GOJI',
+        '-t',
+        'Bug',
+        'Sprint #1',
+        '--priority',
+        'hot',
+        '--description',
+        'Desc',
     )
 
     assert server.last_request.body == {
         'fields': {
             'description': 'Desc',
             'project': {'key': 'GOJI'},
+            'issuetype': {'name': 'Bug'},
             'priority': {'name': 'hot'},
             'summary': 'Sprint #1',
         }

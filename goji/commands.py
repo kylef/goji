@@ -84,7 +84,9 @@ def check_login(client) -> None:
 @click.option('--email', envvar='GOJI_EMAIL', default=None)
 @click.option('--password', envvar='GOJI_PASSWORD', default=None)
 @click.pass_context
-def cli(ctx, profile: str, base_url: str, email: Optional[str], password: Optional[str]) -> None:
+def cli(
+    ctx, profile: str, base_url: str, email: Optional[str], password: Optional[str]
+) -> None:
     config = Configuration.load()
     p = config.profiles.get(profile.lower())
 
