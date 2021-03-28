@@ -43,6 +43,12 @@ class JIRAAuth(HTTPBasicAuth):
             # cookies are used and invalid authorization headers are sent
             # (although request succeeds)
 
+            if 'atlassian.xsrf.token' in request.headers['Cookie'] and len(request.headers['Cookie'].split('=')) == 2:
+                # continue if the cookie is ONLY the xsrf token
+                # check is very naive as to not get into cookie parsing
+                # ensure that we check only for key=value (once) being xsrf
+                return super(JIRAAuth, self).__call__(request)
+
             return request
 
         return super(JIRAAuth, self).__call__(request)
