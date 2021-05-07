@@ -1,5 +1,11 @@
 # GOJI Changelog
 
+## TBD
+
+### Enhancements
+
+- Profile can now be set with environment variable `GOJI_PROFILE`.
+
 ## 0.4.0
 
 ### Breaking Changes

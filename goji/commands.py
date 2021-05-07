@@ -79,7 +79,7 @@ def check_login(client) -> None:
 
 
 @click.group()
-@click.option('--profile', default='default')
+@click.option('--profile', envvar='GOJI_PROFILE', default='default')
 @click.option('--base-url', envvar='GOJI_BASE_URL')
 @click.option('--email', envvar='GOJI_EMAIL', default=None)
 @click.option('--password', envvar='GOJI_PASSWORD', default=None)
