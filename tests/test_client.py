@@ -219,14 +219,14 @@ class ClientTests(ServerTestCase):
             ],
         }
 
-        issues = self.client.search('PROJECT = GOJI')
+        results = self.client.search('PROJECT = GOJI')
 
         self.assertEqual(self.server.last_request.method, 'POST')
         self.assertEqual(self.server.last_request.path, '/rest/api/2/search')
         self.assertEqual(self.server.last_request.body, {'jql': 'PROJECT = GOJI'})
 
-        self.assertEqual(len(issues), 1)
-        self.assertEqual(issues[0].key, 'GOJI-1')
+        self.assertEqual(len(results.issues), 1)
+        self.assertEqual(results.issues[0].key, 'GOJI-1')
 
     def test_create_sprint(self):
         self.server.response.status_code = 201

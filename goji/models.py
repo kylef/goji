@@ -205,6 +205,15 @@ class Attachment(Model):
         self.size = size
 
 
+class SearchResults(Model):
+    @classmethod
+    def from_json(cls, json: Dict[str, Any]) -> 'SearchResults':
+        return cls(issues=list(map(Issue.from_json, json['issues'])))
+
+    def __init__(self, issues: List[Issue]):
+        self.issues = issues
+
+
 """
 class IssueType(object):
     id

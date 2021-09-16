@@ -9,7 +9,15 @@ import requests
 from requests.auth import AuthBase, HTTPBasicAuth
 from requests.compat import urljoin
 
-from goji.models import Attachment, Comment, Issue, Sprint, Transition, User
+from goji.models import (
+    Attachment,
+    Comment,
+    Issue,
+    SearchResults,
+    Sprint,
+    Transition,
+    User,
+)
 
 
 class JIRAException(click.ClickException):
@@ -179,10 +187,10 @@ class JIRAClient(object):
         response = self.post('issue/%s/comment' % issue_key, {'body': comment})
         return Comment.from_json(response.json())
 
-    def search(self, query: str) -> List[Issue]:
+    def search(self, query: str) -> SearchResults:
         response = self.post('search', {'jql': query})
         response.raise_for_status()
-        return list(map(Issue.from_json, response.json()['issues']))
+        return SearchResults.from_json(response.json())
 
     def create_sprint(
         self,

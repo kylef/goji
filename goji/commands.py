@@ -373,9 +373,9 @@ def login(base_url: str) -> None:
 def search(client: JIRAClient, format: str, query: str) -> None:
     """Search issues using JQL"""
 
-    issues = client.search(query)
+    results = client.search(query)
 
-    for issue in issues:
+    for issue in results.issues:
         format_kwargs = dict(
             key=issue.key,
             summary=issue.summary,
