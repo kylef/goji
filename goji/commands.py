@@ -367,13 +367,14 @@ def login(base_url: str) -> None:
 
 
 @click.argument('query')
+@click.option('--limit', type=int)
 @click.option('--format', default='{key} {summary}')
 @cli.command()
 @click.pass_obj
-def search(client: JIRAClient, format: str, query: str) -> None:
+def search(client: JIRAClient, format: str, limit: Optional[int], query: str) -> None:
     """Search issues using JQL"""
 
-    results = client.search(query)
+    results = client.search(query, max_results=limit)
 
     for issue in results.issues:
         format_kwargs = dict(

@@ -187,8 +187,13 @@ class JIRAClient(object):
         response = self.post('issue/%s/comment' % issue_key, {'body': comment})
         return Comment.from_json(response.json())
 
-    def search(self, query: str) -> SearchResults:
-        response = self.post('search', {'jql': query})
+    def search(self, query: str, max_results: Optional[int]) -> SearchResults:
+        body = {'jql': query}
+
+        if max_results is not None:
+            body['maxResults'] = max_results
+
+        response = self.post('search', body)
         response.raise_for_status()
         return SearchResults.from_json(response.json())
 
