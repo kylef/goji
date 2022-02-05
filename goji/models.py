@@ -122,14 +122,34 @@ class IssueLink(Model):
         )
 
 
+class TransitionField(Model):
+    @classmethod
+    def from_json(cls, json: Dict[str, Any]) -> 'Transition':
+        return cls(
+            id=json['fieldId'],
+            name=json.get('name'),
+            is_required=json.get('required')
+        )
+
+    def __init__(self, id: str, name: str, is_required: bool):
+        self.id = id
+        self.name = name
+        self.is_required = is_required
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class Transition(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Transition':
-        return cls(json['id'], json['name'])
+        fields = list(map(TransitionField.from_json, json.get('fields', {}).values()))
+        return cls(json['id'], json['name'], fields)
 
-    def __init__(self, identifier: str, name: str):
+    def __init__(self, identifier: str, name: str, fields: Optional[List[TransitionField]] = None):
         self.id = identifier
         self.name = name
+        self.fields = fields
 
     def __str__(self) -> str:
         return self.name

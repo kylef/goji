@@ -141,7 +141,7 @@ class JIRAClient(object):
         return Issue.from_json(response.json())
 
     def get_issue_transitions(self, issue_key: str) -> List[Transition]:
-        response = self.get('issue/%s/transitions' % issue_key)
+        response = self.get('issue/%s/transitions' % issue_key, params={'expand': 'transitions.fields'})
         response.raise_for_status()
         return list(map(Transition.from_json, response.json()['transitions']))
 
