@@ -1,4 +1,5 @@
 import sys
+from string import Formatter
 from typing import Optional
 
 import click
@@ -374,7 +375,10 @@ def login(base_url: str) -> None:
 def search(client: JIRAClient, format: str, limit: Optional[int], query: str) -> None:
     """Search issues using JQL"""
 
-    results = client.search(query, max_results=limit)
+    formatter = Formatter()
+    fields = [v[1] for v in formatter.parse(format)]
+
+    results = client.search(query, fields=fields, max_results=limit)
 
     for issue in results.issues:
         format_kwargs = dict(

@@ -5,9 +5,9 @@ class Model(object):
     pass
 
 
-class User(Model):
+class UserDetails(Model):
     @classmethod
-    def from_json(cls, json: Dict[str, Any]) -> Optional['User']:
+    def from_json(cls, json: Dict[str, Any]) -> Optional['UserDetails']:
         if json:
             return cls(
                 json.get('name') or '', json['displayName'], json.get('emailAddress')
@@ -31,11 +31,12 @@ class Issue(Model):
 
         if 'fields' in json:
             fields = json['fields']
-            issue.summary = fields['summary'].rstrip()
+            issue.summary = fields.get('summary', '').rstrip()
             issue.description = fields.get('description')
-            issue.creator = User.from_json(fields.get('creator'))
-            issue.assignee = User.from_json(fields.get('assignee'))
-            issue.status = Status.from_json(fields['status'])
+            issue.creator = UserDetails.from_json(fields.get('creator'))
+            issue.assignee = UserDetails.from_json(fields.get('assignee'))
+            if 'status' in fields:
+                issue.status = StatusDetails.from_json(fields['status'])
 
             resolution = fields.get('resolution', None)
             if resolution:
@@ -62,7 +63,7 @@ class Issue(Model):
         self.description = None
         self.creator: Optional[User] = None
         self.assignee: Optional[User] = None
-        self.status: Optional['Status'] = None
+        self.status: Optional['StatusDetails'] = None
         self.resolution: Optional[Resolution] = None
         self.links: List['IssueLink'] = []
         self.customfields: Dict[str, Any] = {}
@@ -137,20 +138,21 @@ class Transition(Model):
 class Comment(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Comment':
+        print(json)
         comment = cls(json['id'], json['body'])
 
         if 'author' in json:
-            comment.author = User.from_json(json['author'])
+            comment.author = UserDetails.from_json(json['author'])
 
         return comment
 
-    def __init__(self, identifier: str, message: str):
+    def __init__(self, identifier: str, body: str):
         self.id = identifier
-        self.message = message
-        self.author: Optional[User] = None
+        self.body = body
+        self.author: Optional[UserDetails] = None
 
     def __str__(self) -> str:
-        return self.message
+        return self.body
 
 
 class Sprint(Model):
@@ -167,15 +169,16 @@ class Sprint(Model):
         return self.name
 
 
-class Status(Model):
+class StatusDetails(Model):
     @classmethod
-    def from_json(cls, json: Dict[str, Any]) -> 'Status':
-        return cls(json['id'], json['name'], json.get('description', None))
+    def from_json(cls, json: Dict[str, Any]) -> 'StatusDetails':
+        return cls(json['id'], json['name'], json.get('description', None), StatusCategory.from_json(json['statusCategory']))
 
-    def __init__(self, identifier: str, name: str, description: Optional[str] = None):
+    def __init__(self, identifier: str, name: str, description: Optional[str], status_category: 'StatusCategory'):
         self.id = identifier
         self.name = name
         self.description = description
+        self.status_category = status_category
 
     def __str__(self) -> str:
         return self.name
@@ -198,11 +201,13 @@ class Resolution(Model):
 class Attachment(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Attachment':
-        return cls(json.get('filename'), int(json['size']))
+        return cls(json.get('filename'), int(json['size']), UserDetails.from_json(json['author']))
 
-    def __init__(self, filename: Optional[str], size: int):
+    def __init__(self, filename: Optional[str], size: int, author: UserDetails):
         self.filename = filename
         self.size = size
+        self.author = author
+
 
 
 class SearchResults(Model):
@@ -228,3 +233,16 @@ class Issue(object):
     summary
     description
 """
+
+class StatusCategory(Model):
+    @classmethod
+    def from_json(cls, json: Dict[str, Any]) -> 'StatusCategory':
+        return cls(json['id'], json['key'], json['name'])
+
+    def __init__(self, identifier: str, key: str, name: str):
+        self.id = identifier
+        self.key = key
+        self.name = name
+
+    def __str__(self) -> str:
+        return self.name

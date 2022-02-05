@@ -9,15 +9,7 @@ import requests
 from requests.auth import AuthBase, HTTPBasicAuth
 from requests.compat import urljoin
 
-from goji.models import (
-    Attachment,
-    Comment,
-    Issue,
-    SearchResults,
-    Sprint,
-    Transition,
-    User,
-)
+from goji.models import Attachment, Comment, Issue, Sprint, Transition, UserDetails, SearchResults
 
 
 class JIRAException(click.ClickException):
@@ -138,10 +130,10 @@ class JIRAClient(object):
 
         return None
 
-    def get_user(self) -> Optional[User]:
+    def get_user(self) -> Optional[UserDetails]:
         response = self.get('myself', allow_redirects=False)
         response.raise_for_status()
-        return User.from_json(response.json())
+        return UserDetails.from_json(response.json())
 
     def get_issue(self, issue_key: str) -> Issue:
         response = self.get('issue/%s' % issue_key)
@@ -187,11 +179,19 @@ class JIRAClient(object):
         response = self.post('issue/%s/comment' % issue_key, {'body': comment})
         return Comment.from_json(response.json())
 
-    def search(self, query: str, max_results: Optional[int]) -> SearchResults:
+    def search(
+        self,
+        query: str,
+        fields: Optional[List[str]] = None,
+        max_results: Optional[int] = None
+    ) -> SearchResults:
         body = {'jql': query}
 
         if max_results is not None:
             body['maxResults'] = max_results
+
+        if fields:
+            body['fields'] = fields
 
         response = self.post('search', body)
         response.raise_for_status()
