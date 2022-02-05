@@ -5,7 +5,7 @@ from click.testing import CliRunner
 
 from goji.commands import cli
 from goji.models import Transition
-from tests.server import JIRAServer
+from tests.server import JIRAServer, OPEN_STATUS
 
 
 class TestClient(object):
@@ -63,9 +63,9 @@ def test_change_status_valid_issue_key_valid_input(invoke, server: JIRAServer) -
     server.set_transition_response(
         'GOJI-15',
         [
-            {'id': '31', 'name': 'Unstarted'},
-            {'id': '21', 'name': 'Going'},
-            {'id': '1', 'name': 'Done'},
+            {'id': '31', 'name': 'Unstarted', 'statusCategory': OPEN_STATUS},
+            {'id': '21', 'name': 'Going', 'statusCategory': OPEN_STATUS},
+            {'id': '1', 'name': 'Done', 'statusCategory': OPEN_STATUS},
         ],
     )
 

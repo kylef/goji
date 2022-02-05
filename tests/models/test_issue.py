@@ -1,6 +1,7 @@
 import unittest
 
-from goji.models import Issue, IssueLink, IssueLinkType, Status
+from goji.models import Issue, IssueLink, IssueLinkType, StatusCategory, StatusDetails
+from tests.server import OPEN_STATUS
 
 
 class IssueTests(unittest.TestCase):
@@ -21,6 +22,11 @@ class IssueTests(unittest.TestCase):
                 'status': {
                     'id': 2,
                     'name': 'To Do',
+                    'statusCategory': {
+                        'id': 1,
+                        'key': 'k',
+                        'name': 'Open',
+                    },
                 },
                 'issuelinks': [
                     {
@@ -33,10 +39,7 @@ class IssueTests(unittest.TestCase):
                             'key': 'GOJI-2',
                             'fields': {
                                 'summary': 'Hello world',
-                                'status': {
-                                    'id': 1,
-                                    'name': 'Open',
-                                },
+                                'status': OPEN_STATUS,
                             },
                         },
                     }
@@ -83,10 +86,7 @@ class IssueLinkTests(unittest.TestCase):
                 'key': 'GOJI-2',
                 'fields': {
                     'summary': 'Hello world',
-                    'status': {
-                        'id': 1,
-                        'name': 'Open',
-                    },
+                    'status': OPEN_STATUS,
                 },
             },
         }
@@ -112,10 +112,7 @@ class IssueLinkTests(unittest.TestCase):
                 'key': 'GOJI-2',
                 'fields': {
                     'summary': 'Hello world',
-                    'status': {
-                        'id': 1,
-                        'name': 'Open',
-                    },
+                    'status': OPEN_STATUS,
                 },
             },
         }
@@ -133,13 +130,13 @@ class IssueLinkTests(unittest.TestCase):
     def test_outward_string_conversion(self) -> None:
         link = IssueLink(IssueLinkType('relates', 'related to', 'relates to'))
         link.outward_issue = Issue('GOJI-15')
-        link.outward_issue.status = Status('open', 'Open')
+        link.outward_issue.status = StatusDetails('open', 'Open', 'open', StatusCategory('a', 'b', 'c'))
 
         assert str(link) == 'Relates to: GOJI-15 (Open)'
 
     def test_inward_string_conversion(self) -> None:
         link = IssueLink(IssueLinkType('relates', 'related to', 'relates to'))
         link.inward_issue = Issue('GOJI-15')
-        link.inward_issue.status = Status('open', 'Open')
+        link.inward_issue.status = StatusDetails('open', 'Open', 'open', StatusCategory('a', 'b', 'c'))
 
         assert str(link) == 'Related to: GOJI-15 (Open)'

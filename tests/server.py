@@ -5,6 +5,17 @@ from threading import Thread
 from typing import Any, Dict, List, Optional
 
 
+OPEN_STATUS = {
+    'id': 1,
+    'name': 'Open',
+    'statusCategory': {
+        'id': 'a',
+        'key': 'a',
+        'name': 'c',
+    }
+}
+
+
 class ServerTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -141,7 +152,7 @@ class JIRAServer(object):
             'fields': {
                 'summary': 'Example Issue',
                 'description': 'Issue Description',
-                'status': {'id': 1, 'name': 'Open'},
+                'status': OPEN_STATUS,
                 'creator': {'displayName': 'Kyle Fuller', 'name': 'kyle'},
                 'assignee': {'displayName': 'Delisa', 'name': 'delisa'},
             },
@@ -157,7 +168,7 @@ class JIRAServer(object):
             'fields': {
                 'summary': 'Example Issue',
                 'description': 'Issue Description',
-                'status': {'id': 1, 'name': 'Open'},
+                'status': OPEN_STATUS,
                 'creator': {'displayName': 'Kyle Fuller', 'name': 'kyle'},
                 'assignee': {'displayName': 'Delisa', 'name': 'delisa'},
             },
@@ -173,7 +184,7 @@ class JIRAServer(object):
         self, issue_key: str, transitions: List[Dict[str, Any]]
     ) -> None:
         self.require_method = 'GET'
-        self.require_path = '/rest/api/2/issue/{}/transitions'.format(issue_key)
+        self.require_path = '/rest/api/2/issue/{}/transitions?expand=transitions.fields'.format(issue_key)
 
         self.response.status_code = 200
         self.response.body = {'transitions': transitions}
@@ -211,7 +222,7 @@ class JIRAServer(object):
                     'fields': {
                         'summary': 'My First Issue',
                         'description': 'One\nTwo\nThree\n',
-                        'status': {'id': 1, 'name': 'open'},
+                        'status': OPEN_STATUS,
                         'creator': {'displayName': 'Kyle Fuller', 'name': 'kyle'},
                         'assignee': {'displayName': 'Delisa', 'name': 'delisa'},
                     },

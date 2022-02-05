@@ -1,7 +1,7 @@
 import datetime
 
 from goji.client import JIRAClient, JIRAException
-from tests.server import ServerTestCase
+from tests.server import ServerTestCase, OPEN_STATUS
 
 
 class ClientTests(ServerTestCase):
@@ -89,10 +89,7 @@ class ClientTests(ServerTestCase):
             'key': 'GOJI-13',
             'fields': {
                 'summary': 'Implement Client Unit Tests',
-                'status': {
-                    'id': 1,
-                    'name': 'open',
-                },
+                'status': OPEN_STATUS,
             },
         }
         issue = self.client.get_issue('GOJI-13')
@@ -113,7 +110,7 @@ class ClientTests(ServerTestCase):
 
         self.assertEqual(self.server.last_request.method, 'GET')
         self.assertEqual(
-            self.server.last_request.path, '/rest/api/2/issue/GOJI-13/transitions'
+            self.server.last_request.path, '/rest/api/2/issue/GOJI-13/transitions?expand=transitions.fields'
         )
 
     def test_transition_issue(self):
@@ -196,7 +193,7 @@ class ClientTests(ServerTestCase):
 
         comment = self.client.comment('GOJI-14', 'Hello World')
 
-        self.assertEqual(comment.message, 'Hello World')
+        self.assertEqual(comment.body, 'Hello World')
         self.assertEqual(comment.author.name, 'Fred F. User')
 
         self.assertEqual(self.server.last_request.method, 'POST')
@@ -213,7 +210,7 @@ class ClientTests(ServerTestCase):
                     'fields': {
                         'summary': 'Hello World',
                         'description': 'One\nTwo\nThree\n',
-                        'status': {'id': 1, 'name': 'open'},
+                        'status': OPEN_STATUS,
                     },
                 }
             ],

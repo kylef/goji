@@ -1,6 +1,6 @@
 import unittest
 
-from goji.models import User
+from goji.models import UserDetails
 
 
 class UserTests(unittest.TestCase):
@@ -11,7 +11,7 @@ class UserTests(unittest.TestCase):
             'displayName': 'Kyle Fuller',
         }
 
-        user = User.from_json(json)
+        user = UserDetails.from_json(json)
 
         assert user
         assert user.username == 'kyle'
@@ -19,5 +19,5 @@ class UserTests(unittest.TestCase):
         assert user.email == 'kyle@example.com'
 
     def test_string_conversion(self) -> None:
-        user = User(username='kyle', name='Kyle Fuller')
+        user = UserDetails(username='kyle', name='Kyle Fuller')
         assert str(user) == 'Kyle Fuller (kyle)'

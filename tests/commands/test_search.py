@@ -6,8 +6,8 @@ def test_search(invoke, server: JIRAServer) -> None:
 
     result = invoke('search', 'PROJECT=GOJI')
 
-    assert result.output == 'GOJI-7 My First Issue\n'
     assert result.exception is None
+    assert result.output == 'GOJI-7 My First Issue\n'
     assert result.exit_code == 0
 
 
@@ -16,8 +16,8 @@ def test_search_format_key(invoke, server: JIRAServer) -> None:
 
     result = invoke('search', '--format', '{key}', 'PROJECT=GOJI')
 
-    assert result.output == 'GOJI-7\n'
     assert result.exception is None
+    assert result.output == 'GOJI-7\n'
     assert result.exit_code == 0
 
 
@@ -26,8 +26,8 @@ def test_search_format_summary(invoke, server: JIRAServer) -> None:
 
     result = invoke('search', '--format', '{summary}', 'PROJECT=GOJI')
 
-    assert result.output == 'My First Issue\n'
     assert result.exception is None
+    assert result.output == 'My First Issue\n'
     assert result.exit_code == 0
 
 
@@ -56,6 +56,6 @@ def test_search_format_assignee(invoke, server: JIRAServer) -> None:
 
     result = invoke('search', '--format', '{assignee}', 'PROJECT=GOJI')
 
-    assert result.output == 'Delisa (delisa)\n'
     assert result.exception is None
+    assert result.output == 'Delisa (delisa)\n'
     assert result.exit_code == 0

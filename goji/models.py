@@ -138,7 +138,6 @@ class Transition(Model):
 class Comment(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Comment':
-        print(json)
         comment = cls(json['id'], json['body'])
 
         if 'author' in json:
