@@ -84,6 +84,7 @@ Subcommands:
 - [comment](#comment) - Comment on an issue
 - [change-status](#change-status) - Change the status of an issue
 - edit - Edit issue description
+- [link](#link) - Link an issue to another issue
 - attach - Attach file(s) to an issue
 - [open](#open) - Open issue in a web browser
 - [search](#search) - Search issues using JQL
@@ -116,6 +117,15 @@ $ goji show GOJI-1
 
   Related issues:
   - Relates to: GOJI-2 (Closed)
+```
+
+### link
+
+Link an issue to another issue, for example. To link GOJI-2 to GOJI-1 as GOJI-2
+is a duplicate of GOJI-1:
+
+```bash
+$ goji link GOJI-2 GOJI-1 Duplicate
 ```
 
 ### open

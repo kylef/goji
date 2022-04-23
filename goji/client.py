@@ -9,7 +9,7 @@ import requests
 from requests.auth import AuthBase, HTTPBasicAuth
 from requests.compat import urljoin
 
-from goji.models import Attachment, Comment, Issue, Sprint, Transition, UserDetails, SearchResults
+from goji.models import Attachment, Comment, Issue, IssueLinkType, Sprint, Transition, UserDetails, SearchResults
 
 
 class JIRAException(click.ClickException):
@@ -166,6 +166,24 @@ class JIRAClient(object):
         )
         self.validate_response(response)
         return list(map(Attachment.from_json, response.json()))
+
+    def get_issue_link_types(self) -> List[IssueLinkType]:
+        response = self.get('issueLinkType')
+        return list(map(IssueLinkType.from_json, response.json()['issueLinkTypes']))
+
+    def link_issue(self, outward_issue: str, inward_issue: str, type: str):
+        data = {
+            'type': {
+                'name': type,
+            },
+            'inwardIssue': {
+                'key': inward_issue,
+            },
+            'outwardIssue': {
+                'key': outward_issue,
+            },
+        }
+        self.post('issueLink', data)
 
     def create_issue(self, fields) -> Issue:
         response = self.post('issue', {'fields': fields})

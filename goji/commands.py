@@ -367,6 +367,23 @@ def login(base_url: str) -> None:
     set_credentials(base_url, email, password)
 
 
+@click.argument('type')
+@click.argument('outward-issue')
+@click.argument('inward-issue')
+@click.option('--list-types/--no-list-types', default=False)
+@cli.command()
+@click.pass_obj
+def link(client: JIRAClient, inward_issue: str, outward_issue: str, type: str, list_types: bool) -> None:
+    if list_types:
+        types = client.get_issue_link_types()
+        for link_type in types:
+            print(f'{link_type.name} ({link_type.inward} -> {link_type.outward})')
+        return
+
+    client.link_issue(inward_issue, outward_issue, type)
+    print(f'{inward_issue} linked to {outward_issue}')
+
+
 @click.argument('query')
 @click.option('--limit', type=int)
 @click.option('--format', default='{key} {summary}')
