@@ -1,4 +1,5 @@
 import sys
+from os import isatty
 from string import Formatter
 from typing import Optional
 
@@ -390,6 +391,10 @@ def search(client: JIRAClient, format: str, limit: Optional[int], query: str) ->
             status=issue.status,
             resolution=issue.resolution,
         )
+
+        if isatty(sys.stdout.fileno()):
+            url = urljoin(client.base_url, 'browse/%s' % issue.key)
+            format_kwargs['key'] = f'\033]8;;{url}\a{issue.key}\033]8;;\a'
 
         format_kwargs.update(issue.customfields)
 
