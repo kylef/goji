@@ -6,6 +6,7 @@
 
 - `goji search` contains an `--all` option to view all issues (paginating
   through each page).
+- Added `goji link` command to link two issues together.
 
 ## 0.5.0
 
