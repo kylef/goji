@@ -130,13 +130,17 @@ class IssueLinkTests(unittest.TestCase):
     def test_outward_string_conversion(self) -> None:
         link = IssueLink(IssueLinkType('relates', 'related to', 'relates to'))
         link.outward_issue = Issue('GOJI-15')
-        link.outward_issue.status = StatusDetails('open', 'Open', 'open', StatusCategory('a', 'b', 'c'))
+        link.outward_issue.status = StatusDetails(
+            'open', 'Open', 'open', StatusCategory('a', 'b', 'c')
+        )
 
         assert str(link) == 'Relates to: GOJI-15 (Open)'
 
     def test_inward_string_conversion(self) -> None:
         link = IssueLink(IssueLinkType('relates', 'related to', 'relates to'))
         link.inward_issue = Issue('GOJI-15')
-        link.inward_issue.status = StatusDetails('open', 'Open', 'open', StatusCategory('a', 'b', 'c'))
+        link.inward_issue.status = StatusDetails(
+            'open', 'Open', 'open', StatusCategory('a', 'b', 'c')
+        )
 
         assert str(link) == 'Related to: GOJI-15 (Open)'

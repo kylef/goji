@@ -5,7 +5,7 @@ from click.testing import CliRunner
 
 from goji.commands import cli
 from goji.models import Transition
-from tests.server import JIRAServer, OPEN_STATUS
+from tests.server import OPEN_STATUS, JIRAServer
 
 
 class TestClient(object):

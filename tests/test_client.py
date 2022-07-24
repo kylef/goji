@@ -1,7 +1,7 @@
 import datetime
 
 from goji.client import JIRAClient, JIRAException
-from tests.server import ServerTestCase, OPEN_STATUS
+from tests.server import OPEN_STATUS, ServerTestCase
 
 
 class ClientTests(ServerTestCase):
@@ -110,7 +110,8 @@ class ClientTests(ServerTestCase):
 
         self.assertEqual(self.server.last_request.method, 'GET')
         self.assertEqual(
-            self.server.last_request.path, '/rest/api/2/issue/GOJI-13/transitions?expand=transitions.fields'
+            self.server.last_request.path,
+            '/rest/api/2/issue/GOJI-13/transitions?expand=transitions.fields',
         )
 
     def test_transition_issue(self):

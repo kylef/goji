@@ -126,9 +126,7 @@ class TransitionField(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Transition':
         return cls(
-            id=json['fieldId'],
-            name=json.get('name'),
-            is_required=json.get('required')
+            id=json['fieldId'], name=json.get('name'), is_required=json.get('required')
         )
 
     def __init__(self, id: str, name: str, is_required: bool):
@@ -146,7 +144,9 @@ class Transition(Model):
         fields = list(map(TransitionField.from_json, json.get('fields', {}).values()))
         return cls(json['id'], json['name'], fields)
 
-    def __init__(self, identifier: str, name: str, fields: Optional[List[TransitionField]] = None):
+    def __init__(
+        self, identifier: str, name: str, fields: Optional[List[TransitionField]] = None
+    ):
         self.id = identifier
         self.name = name
         self.fields = fields
@@ -191,9 +191,20 @@ class Sprint(Model):
 class StatusDetails(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'StatusDetails':
-        return cls(json['id'], json['name'], json.get('description', None), StatusCategory.from_json(json['statusCategory']))
+        return cls(
+            json['id'],
+            json['name'],
+            json.get('description', None),
+            StatusCategory.from_json(json['statusCategory']),
+        )
 
-    def __init__(self, identifier: str, name: str, description: Optional[str], status_category: 'StatusCategory'):
+    def __init__(
+        self,
+        identifier: str,
+        name: str,
+        description: Optional[str],
+        status_category: 'StatusCategory',
+    ):
         self.id = identifier
         self.name = name
         self.description = description
@@ -220,7 +231,11 @@ class Resolution(Model):
 class Attachment(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Attachment':
-        return cls(json.get('filename'), int(json['size']), UserDetails.from_json(json['author']))
+        return cls(
+            json.get('filename'),
+            int(json['size']),
+            UserDetails.from_json(json['author']),
+        )
 
     def __init__(self, filename: Optional[str], size: int, author: UserDetails):
         self.filename = filename
@@ -228,14 +243,32 @@ class Attachment(Model):
         self.author = author
 
 
-
 class SearchResults(Model):
+    # https://docs.atlassian.com/software/jira/docs/api/REST/8.22.6/#search-search
+
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'SearchResults':
-        return cls(issues=list(map(Issue.from_json, json['issues'])))
+        return cls(
+            issues=list(map(Issue.from_json, json['issues'])),
+            expand=json['expand'].split(','),
+            start_at=json['startAt'],
+            max_results=json['maxResults'],
+            total=json['total'],
+        )
 
-    def __init__(self, issues: List[Issue]):
+    def __init__(
+        self,
+        issues: List[Issue],
+        expand: List[str],
+        start_at: int,
+        max_results: int,
+        total: int,
+    ):
         self.issues = issues
+        self.expand = expand
+        self.start_at = start_at
+        self.max_results = max_results
+        self.total = total
 
 
 """
@@ -252,6 +285,7 @@ class Issue(object):
     summary
     description
 """
+
 
 class StatusCategory(Model):
     @classmethod

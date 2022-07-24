@@ -4,7 +4,6 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from threading import Thread
 from typing import Any, Dict, List, Optional
 
-
 OPEN_STATUS = {
     'id': 1,
     'name': 'Open',
@@ -12,7 +11,7 @@ OPEN_STATUS = {
         'id': 'a',
         'key': 'a',
         'name': 'c',
-    }
+    },
 }
 
 
@@ -184,7 +183,11 @@ class JIRAServer(object):
         self, issue_key: str, transitions: List[Dict[str, Any]]
     ) -> None:
         self.require_method = 'GET'
-        self.require_path = '/rest/api/2/issue/{}/transitions?expand=transitions.fields'.format(issue_key)
+        self.require_path = (
+            '/rest/api/2/issue/{}/transitions?expand=transitions.fields'.format(
+                issue_key
+            )
+        )
 
         self.response.status_code = 200
         self.response.body = {'transitions': transitions}
@@ -216,6 +219,10 @@ class JIRAServer(object):
 
         self.response.status_code = 200
         self.response.body = {
+            'total': 1,
+            'expand': 'summary',
+            'startAt': 0,
+            'maxResults': 50,
             'issues': [
                 {
                     'key': 'GOJI-7',
@@ -227,7 +234,7 @@ class JIRAServer(object):
                         'assignee': {'displayName': 'Delisa', 'name': 'delisa'},
                     },
                 }
-            ]
+            ],
         }
 
     def set_create_sprint_response(self) -> None:
