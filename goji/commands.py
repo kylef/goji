@@ -371,10 +371,16 @@ def login(base_url: str) -> None:
 @click.argument('query')
 @click.option('--limit', type=int)
 @click.option('--format', default='{key} {summary}')
+@click.option('--count', is_flag=True, help='Return the count of matched issues')
 @cli.command()
 @click.pass_obj
-def search(client: JIRAClient, format: str, limit: Optional[int], query: str) -> None:
+def search(client: JIRAClient, count: bool, format: str, limit: Optional[int], query: str) -> None:
     """Search issues using JQL"""
+
+    if count:
+        results = client.search(query, fields=['key'], max_results=1)
+        print(results.total)
+        return
 
     formatter = Formatter()
     fields = [v[1] for v in formatter.parse(format)]
