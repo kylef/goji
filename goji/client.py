@@ -12,6 +12,7 @@ from requests.compat import urljoin
 from goji.models import (
     Attachment,
     Comment,
+    Comments,
     Issue,
     SearchResults,
     Sprint,
@@ -188,6 +189,10 @@ class JIRAClient(object):
     def comment(self, issue_key: str, comment: str) -> Comment:
         response = self.post('issue/%s/comment' % issue_key, {'body': comment})
         return Comment.from_json(response.json())
+
+    def comments(self, issue_key: str) -> Comments:
+        response = self.get('issue/%s/comment' % issue_key)
+        return Comments.from_json(response.json())
 
     def search(
         self,

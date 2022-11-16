@@ -174,6 +174,29 @@ class Comment(Model):
         return self.body
 
 
+class Comments(Model):
+    @classmethod
+    def from_json(cls, json: Dict[str, Any]) -> 'Comments':
+        return cls(
+            comments=list(map(Comment.from_json, json['comments'])),
+            start_at=json['startAt'],
+            max_results=json['maxResults'],
+            total=json['total'],
+        )
+
+    def __init__(
+        self,
+        comments: List[Comment],
+        start_at: int,
+        max_results: int,
+        total: int,
+    ):
+        self.comments = comments
+        self.start_at = start_at
+        self.max_results = max_results
+        self.total = total
+
+
 class Sprint(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Sprint':

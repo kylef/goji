@@ -231,6 +231,21 @@ def change_status(client: JIRAClient, issue_key: str, status: Optional[str]) -> 
     click.echo('Okay, the status for {} is now "{}".'.format(issue_key, transition))
 
 
+@click.argument('issue_key')
+@cli.command()
+@click.pass_obj
+def comments(client: JIRAClient, issue_key: str) -> None:
+    comments = client.comments(issue_key)
+
+    for index, comment in enumerate(comments.comments):
+        if index != 0:
+            print()
+
+        print('=' * 60)
+        print(comment.author)
+        print(comment)
+
+
 @click.option('--message', '-m', help='Message to comment.')
 @click.argument('issue_key')
 @cli.command()
