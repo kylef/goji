@@ -1,10 +1,16 @@
 # GOJI Changelog
 
-## TBD
+## 0.5.0
 
 ### Enhancements
 
 - Profile can now be set with environment variable `GOJI_PROFILE`.
+- `goji search` now has an `--count` option which returns amount of tickets
+  matching search query.
+- Search results now use hyperlinks for JIRA ticket keys.
+- Performance improvement to search by only requesting desired fields from
+  jira.
+- New `goji comments` command for viewing comments for a ticket.
 
 ## 0.4.0
 
