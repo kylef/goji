@@ -44,6 +44,8 @@ class Issue(Model):
             else:
                 issue.resolution = None
 
+            issue.labels = fields.get('labels', None)
+
             links = []
             if 'issuelinks' in fields:
                 links = [IssueLink.from_json(link) for link in fields['issuelinks']]
@@ -66,6 +68,7 @@ class Issue(Model):
         self.status: Optional['StatusDetails'] = None
         self.resolution: Optional[Resolution] = None
         self.links: List['IssueLink'] = []
+        self.labels: Optional[List[str]] = None
         self.customfields: Dict[str, Any] = {}
 
     def __str__(self):
