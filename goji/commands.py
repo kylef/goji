@@ -13,68 +13,8 @@ from goji.config import Configuration
 from goji.utils import Datetime
 
 
-def submit_form(
-    session: requests.Session, response: requests.Response, data=None
-) -> requests.Response:
-    from requests_html import HTML
-
-    html = HTML(url=response.url, html=response.text)
-
-    forms = html.find('form')
-    if len(forms) == 0:
-        raise Exception('Page does have any forms')
-
-    form = forms[0]
-    url = form.attrs['action']
-    fields = form.find('input')
-
-    data = data or {}
-
-    for field in fields:
-        name = field.attrs['name']
-
-        if name not in data:
-            value = field.attrs['value']
-            data[name] = value
-
-    response = session.post(urljoin(response.url, url), data=data)
-    return response
-
-
 def check_login(client) -> None:
     response = client.get('myself', allow_redirects=False)
-
-    if response.status_code == 302:
-        if sys.version_info.major == 2:
-            raise click.ClickException(
-                'JIRA instances requires SSO login. goji requires Python 3 to do this. Please upgrade to Python 3'
-            )
-
-        # JIRA API may redirect to SSO Authentication if auth fails
-        # Manually follow redirect, some SSO requires browser user-agent
-        response = client.get(
-            response.headers['Location'],
-            headers={
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
-            },
-        )
-
-        auth = client.session.auth
-
-        if (
-            '<body onLoad="document.myForm.submit()">' in response.text
-            or '<body onLoad="submitForm()">' in response.text
-        ):
-            # Pretend we're a JavaScript client
-            response = submit_form(client.session, response)
-
-        response = submit_form(
-            client.session,
-            response,
-            {'ssousername': auth.username, 'password': auth.password},
-        )
-
-        client.save_cookies()
 
     if response.status_code == 401:
         raise click.ClickException('Incorrect credentials. Try `goji login`.')
@@ -123,9 +63,6 @@ def cli(
                 )
 
             ctx.obj = JIRAClient(base_url, auth=(email, password))
-
-            if len(ctx.obj.session.cookies) > 0:
-                check_login(ctx.obj)
 
 
 @cli.command('whoami')

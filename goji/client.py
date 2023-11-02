@@ -44,28 +44,6 @@ class NoneAuth(AuthBase):
         return request
 
 
-class JIRAAuth(HTTPBasicAuth):
-    def __call__(self, request):
-        if 'Cookie' in request.headers:
-            # Prevent authorization headers when cookies are present as it
-            # causes silent authentication errors on the JIRA instance if
-            # cookies are used and invalid authorization headers are sent
-            # (although request succeeds)
-
-            if (
-                'atlassian.xsrf.token' in request.headers['Cookie']
-                and len(request.headers['Cookie'].split('=')) == 2
-            ):
-                # continue if the cookie is ONLY the xsrf token
-                # check is very naive as to not get into cookie parsing
-                # ensure that we check only for key=value (once) being xsrf
-                return super(JIRAAuth, self).__call__(request)
-
-            return request
-
-        return super(JIRAAuth, self).__call__(request)
-
-
 class JIRAClient(object):
     def __init__(self, base_url: str, auth=None):
         self.session = requests.Session()
@@ -73,37 +51,9 @@ class JIRAClient(object):
         self.rest_base_url = urljoin(self.base_url, 'rest/api/2/')
 
         if auth:
-            self.session.auth = JIRAAuth(auth[0], auth[1])
+            self.session.auth = HTTPBasicAuth(auth[0], auth[1])
         else:
             self.session.auth = NoneAuth()
-
-        self.load_cookies()
-
-    # Persistent Cookie
-
-    @property
-    def cookie_path(self) -> str:
-        return os.path.expanduser('~/.goji/cookies')
-
-    def load_cookies(self) -> None:
-        if os.path.exists(self.cookie_path):
-            try:
-                with open(self.cookie_path, 'rb') as fp:
-                    self.session.cookies = pickle.load(fp)
-            except Exception as e:
-                print('warning: Could not load cookies from dist: {}'.format(e))
-
-    def save_cookies(self) -> None:
-        cookies = self.session.cookies.keys()
-        cookies.remove('atlassian.xsrf.token')
-
-        if len(cookies) > 0:
-            os.makedirs(os.path.expanduser('~/.goji'), exist_ok=True)
-
-            with open(self.cookie_path, 'wb') as fp:
-                pickle.dump(self.session.cookies, fp)
-        elif os.path.exists(self.cookie_path):
-            os.remove(self.cookie_path)
 
     # Methods
 
@@ -134,7 +84,7 @@ class JIRAClient(object):
 
     @property
     def username(self) -> Optional[str]:
-        if self.session.auth and isinstance(self.session.auth, JIRAAuth):
+        if self.session.auth and isinstance(self.session.auth, HTTPBasicAuth):
             return self.session.auth.username
 
         return None
