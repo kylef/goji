@@ -2,7 +2,7 @@ import datetime
 import mimetypes
 import os
 import pickle
-from typing import Any, List, Optional
+from typing import Any, Generator, List, Optional
 
 import click
 import requests
@@ -215,6 +215,28 @@ class JIRAClient(object):
         response = self.post('search', body)
         response.raise_for_status()
         return SearchResults.from_json(response.json())
+
+    def search_all(
+        self,
+        query: str,
+        fields: Optional[List[str]] = None,
+    ) -> Generator[Issue, None, None]:
+        issues = 0
+
+        while True:
+            results = self.search(query, fields, start_at=issues)
+            issues += len(results.issues)
+
+            for issue in results.issues:
+                yield issue
+
+            if len(results.issues) == 0:
+                break
+
+            if issues >= results.total:
+                break
+
+        return issues
 
     def create_sprint(
         self,

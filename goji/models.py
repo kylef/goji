@@ -273,7 +273,7 @@ class SearchResults(Model):
     def from_json(cls, json: Dict[str, Any]) -> 'SearchResults':
         return cls(
             issues=list(map(Issue.from_json, json['issues'])),
-            expand=json['expand'].split(','),
+            expand=json.get('expand', '').split(','),
             start_at=json['startAt'],
             max_results=json['maxResults'],
             total=json['total'],
@@ -292,6 +292,9 @@ class SearchResults(Model):
         self.start_at = start_at
         self.max_results = max_results
         self.total = total
+
+    def __repr__(self) -> str:
+        return f'<SearchResults issues={len(self.issues)} start_at={self.start_at} total={self.total}>'
 
 
 """

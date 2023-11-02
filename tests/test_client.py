@@ -1,7 +1,7 @@
 import datetime
 
 from goji.client import JIRAClient, JIRAException
-from tests.server import OPEN_STATUS, ServerTestCase
+from tests.server import OPEN_STATUS, Response, ServerTestCase
 
 
 class ClientTests(ServerTestCase):
@@ -215,6 +215,9 @@ class ClientTests(ServerTestCase):
                     },
                 }
             ],
+            'startAt': 0,
+            'maxResults': 50,
+            'total': 1,
         }
 
         results = self.client.search('PROJECT = GOJI')
@@ -225,6 +228,74 @@ class ClientTests(ServerTestCase):
 
         self.assertEqual(len(results.issues), 1)
         self.assertEqual(results.issues[0].key, 'GOJI-1')
+
+    def test_search_all_single_page(self):
+        self.server.response.body = {
+            'issues': [
+                {
+                    'key': 'GOJI-1',
+                    'fields': {
+                        'summary': 'Hello World',
+                        'description': 'One\nTwo\nThree\n',
+                        'status': OPEN_STATUS,
+                    },
+                }
+            ],
+            'startAt': 0,
+            'maxResults': 50,
+            'total': 1,
+        }
+
+        issues = list(self.client.search_all('PROJECT = GOJI'))
+
+        self.assertEqual(self.server.last_request.method, 'POST')
+        self.assertEqual(self.server.last_request.path, '/rest/api/2/search')
+        self.assertEqual(self.server.last_request.body, {'jql': 'PROJECT = GOJI'})
+
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0].key, 'GOJI-1')
+
+    def test_search_all_two_page(self):
+        self.server.response = None
+        self.server.responses = [
+            Response(200, {
+                'issues': [
+                    {
+                        'key': 'GOJI-1',
+                        'fields': {
+                            'summary': 'Hello World',
+                            'description': 'One\nTwo\nThree\n',
+                            'status': OPEN_STATUS,
+                        },
+                    }
+                ],
+                'startAt': 0,
+                'maxResults': 1,
+                'total': 2,
+            }),
+            Response(200, {
+                'issues': [
+                    {
+                        'key': 'GOJI-2',
+                        'fields': {
+                            'summary': 'Hello World',
+                            'description': 'One\nTwo\nThree\n',
+                            'status': OPEN_STATUS,
+                        },
+                    }
+                ],
+                'startAt': 1,
+                'maxResults': 1,
+                'total': 2,
+            }),
+        ]
+
+        issues = list(self.client.search_all('PROJECT = GOJI'))
+        self.assertEqual(len(issues), 2)
+
+        self.assertEqual(len(self.server.requests), 2)
+        self.assertEqual(self.server.requests[0].body, {'jql': 'PROJECT = GOJI'})
+        self.assertEqual(self.server.requests[1].body, {'jql': 'PROJECT = GOJI', 'startAt': 1})
 
     def test_create_sprint(self):
         self.server.response.status_code = 201

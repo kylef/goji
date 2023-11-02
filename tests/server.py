@@ -79,12 +79,16 @@ class JIRAServer(object):
                 request = Request(method, self.path, self.headers, body)
                 server.requests.append(request)
 
-                body = json.dumps(server.response.body)
+                response = server.response
+                if response is None:
+                    response = server.responses.pop(0)
 
-                self.send_response(server.response.status_code)
+                body = json.dumps(response.body)
+
+                self.send_response(response.status_code)
                 self.send_header('Content-Length', str(len(body)))
                 self.send_header(
-                    'Content-Type', server.response.headers['Content-Type']
+                    'Content-Type', response.headers['Content-Type']
                 )
                 self.end_headers()
                 self.wfile.write(body.encode('utf-8'))
@@ -117,7 +121,8 @@ class JIRAServer(object):
 
     def reset(self) -> None:
         self.requests: List[Request] = []
-        self.response = Response(200, None)
+        self.response: Optional[Response] = Response(200, None)
+        self.responses: Optional[List[Response]] = None
         self.require_method: Optional[str] = None
         self.require_path: Optional[str] = None
 

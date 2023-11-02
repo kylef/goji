@@ -1,5 +1,12 @@
 # GOJI Changelog
 
+## TBD
+
+### Enhancements
+
+- `goji search` contains an `--all` option to view all issues (paginating
+  through each page).
+
 ## 0.5.0
 
 ### Enhancements
