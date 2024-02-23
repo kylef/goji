@@ -1,6 +1,7 @@
 import unittest
 
-from goji.models import Issue, IssueLink, IssueLinkType, StatusCategory, StatusDetails
+from goji.models import (Issue, IssueLink, IssueLinkType, StatusCategory,
+                         StatusDetails)
 from tests.server import OPEN_STATUS
 
 

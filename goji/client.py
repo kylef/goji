@@ -1,25 +1,14 @@
 import datetime
 import mimetypes
-import os
-import pickle
-from typing import Any, Generator, List, Optional
+from typing import Any, Dict, Generator, List, Optional
 
 import click
 import requests
 from requests.auth import AuthBase, HTTPBasicAuth
 from requests.compat import urljoin
 
-from goji.models import (
-    Attachment,
-    Comment,
-    Comments,
-    Issue,
-    IssueLinkType,
-    SearchResults,
-    Sprint,
-    Transition,
-    UserDetails,
-)
+from goji.models import (Attachment, Comment, Comments, Issue, IssueLinkType,
+                         SearchResults, Sprint, Transition, UserDetails)
 
 
 class JIRAException(click.ClickException):
@@ -170,7 +159,7 @@ class JIRAClient(object):
         max_results: Optional[int] = None,
         start_at: Optional[int] = None,
     ) -> SearchResults:
-        body = {'jql': query}
+        body: Dict[str, Any] = {'jql': query}
 
         if start_at:
             body['startAt'] = start_at

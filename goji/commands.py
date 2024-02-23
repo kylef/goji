@@ -1,4 +1,5 @@
 import importlib
+import io
 import pkgutil
 import sys
 from os import isatty
@@ -354,7 +355,7 @@ def search(client: JIRAClient, all: bool, count: bool, format: str, limit: Optio
         return
 
     formatter = Formatter()
-    fields = [v[1] for v in formatter.parse(format)]
+    fields = [v[1] for v in formatter.parse(format) if v[1]]
 
     if all:
         issues = client.search_all(query, fields=fields)
@@ -372,7 +373,7 @@ def search(client: JIRAClient, all: bool, count: bool, format: str, limit: Optio
             resolution=issue.resolution,
         )
 
-        if isatty(sys.stdout.fileno()):
+        if 'key' in fields and not isinstance(sys.stdout, io.TextIOWrapper) and isatty(sys.stdout.fileno()):
             url = urljoin(client.base_url, 'browse/%s' % issue.key)
             format_kwargs['key'] = f'\033]8;;{url}\a{issue.key}\033]8;;\a'
 

@@ -68,10 +68,10 @@ class Issue(Model):
         self.key = key
         self.summary = None
         self.description = None
-        self.creator: Optional[User] = None
+        self.creator: Optional[UserDetails] = None
         self.created: Optional[datetime] = None
         self.resolutiondate: Optional[datetime] = None
-        self.assignee: Optional[User] = None
+        self.assignee: Optional[UserDetails] = None
         self.status: Optional['StatusDetails'] = None
         self.resolution: Optional[Resolution] = None
         self.links: List['IssueLink'] = []
