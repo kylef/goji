@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 
@@ -34,6 +35,10 @@ class Issue(Model):
             issue.summary = fields.get('summary', '').rstrip()
             issue.description = fields.get('description')
             issue.creator = UserDetails.from_json(fields.get('creator'))
+            if 'created' in fields:
+                issue.created = datetime.fromisoformat(fields['created'].replace('+0000', '+00:00'))
+            if 'resolutiondate' in fields and fields['resolutiondate']:
+                issue.resolutiondate = datetime.fromisoformat(fields['resolutiondate'].replace('+0000', '+00:00'))
             issue.assignee = UserDetails.from_json(fields.get('assignee'))
             if 'status' in fields:
                 issue.status = StatusDetails.from_json(fields['status'])
@@ -64,6 +69,8 @@ class Issue(Model):
         self.summary = None
         self.description = None
         self.creator: Optional[User] = None
+        self.created: Optional[datetime] = None
+        self.resolutiondate: Optional[datetime] = None
         self.assignee: Optional[User] = None
         self.status: Optional['StatusDetails'] = None
         self.resolution: Optional[Resolution] = None
