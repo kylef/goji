@@ -1,10 +1,11 @@
+import importlib
+import pkgutil
 import sys
 from os import isatty
 from string import Formatter
 from typing import Optional
 
 import click
-import requests
 from requests.compat import urljoin
 
 from goji.auth import get_credentials, set_credentials
@@ -396,3 +397,25 @@ def sprint_create(client: JIRAClient, board_id: int, name: str, start, end) -> N
 
     client.create_sprint(board_id, name, start_date=start, end_date=end)
     click.echo('Sprint created')
+
+
+# Support for plugins, this API is somewhat unstable, it may change between versions.
+plugins = [name for _, name, _ in pkgutil.iter_modules() if name.startswith('goji_')]
+for module in plugins:
+    try:
+        plugin = importlib.import_module(module)
+
+        @cli.command(
+            name=getattr(plugin, '__name__'),
+            help=getattr(plugin, '__doc__'),
+            context_settings=dict(
+                ignore_unknown_options=True,
+            ))
+        @click.pass_obj
+        @click.argument('args', nargs=-1, type=click.UNPROCESSED)
+        def func(client: JIRAClient, args):
+            main = getattr(plugin, '__main__')
+            main(client, args)
+    except Exception as e:
+        print(f'Failed to load plugin {module}: {repr(e)}', file=sys.stderr)
+        continue
