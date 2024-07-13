@@ -22,6 +22,7 @@ def get_credentials(base_url: str) -> Tuple[Optional[str], Optional[str]]:
 
 def set_credentials(base_url: str, email, password) -> None:
     hostname = urlparse(base_url).hostname
+    assert hostname
     filepath = path.expanduser('~/.netrc')
     if path.isfile(filepath):
         rcfile = open(filepath)

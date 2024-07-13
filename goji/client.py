@@ -194,8 +194,6 @@ class JIRAClient(object):
             if issues >= results.total:
                 break
 
-        return issues
-
     def create_sprint(
         self,
         board_id: int,

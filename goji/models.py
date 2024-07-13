@@ -134,7 +134,7 @@ class IssueLink(Model):
 
 class TransitionField(Model):
     @classmethod
-    def from_json(cls, json: Dict[str, Any]) -> 'Transition':
+    def from_json(cls, json: Dict[str, Any]) -> 'TransitionField':
         return cls(
             id=json['fieldId'], name=json.get('name'), is_required=json.get('required')
         )

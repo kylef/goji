@@ -1,6 +1,6 @@
 # goji
 
-goji is a minimal command line client for JIRA.
+goji is a command line client for JIRA.
 
 ## Installation
 
