@@ -1,3 +1,4 @@
+from functools import partial
 import importlib
 import io
 import pkgutil
@@ -401,22 +402,26 @@ def sprint_create(client: JIRAClient, board_id: int, name: str, start, end) -> N
 
 
 # Support for plugins, this API is somewhat unstable, it may change between versions.
+def add_plugin_command(plugin, main):
+    @cli.command(
+        name=getattr(plugin, '__name__'),
+        help=getattr(plugin, '__doc__'),
+        context_settings=dict(
+            ignore_unknown_options=True,
+        ),
+    )
+    @click.pass_obj
+    @click.argument('args', nargs=-1, type=click.UNPROCESSED)
+    def func(client: JIRAClient, args):
+        main(client, args)
+
+
 plugins = [name for _, name, _ in pkgutil.iter_modules() if name.startswith('goji_')]
 for module in plugins:
     try:
         plugin = importlib.import_module(module)
-
-        @cli.command(
-            name=getattr(plugin, '__name__'),
-            help=getattr(plugin, '__doc__'),
-            context_settings=dict(
-                ignore_unknown_options=True,
-            ))
-        @click.pass_obj
-        @click.argument('args', nargs=-1, type=click.UNPROCESSED)
-        def func(client: JIRAClient, args):
-            main = getattr(plugin, '__main__')
-            main(client, args)
+        main = partial(getattr(plugin, '__main__'))
+        add_plugin_command(plugin, main)
     except Exception as e:
         print(f'Failed to load plugin {module}: {repr(e)}', file=sys.stderr)
         continue
