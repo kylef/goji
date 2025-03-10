@@ -1,12 +1,14 @@
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 
-class Model(object):
-    pass
+@dataclass
+class UserDetails:
+    username: Optional[str]
+    name: str
+    email: Optional[str] = None
 
-
-class UserDetails(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> Optional['UserDetails']:
         if json:
@@ -16,16 +18,25 @@ class UserDetails(Model):
 
         return None
 
-    def __init__(self, username: Optional[str], name: str, email: Optional[str] = None):
-        self.username = username
-        self.name = name
-        self.email = email
-
     def __str__(self) -> str:
         return '{} ({})'.format(self.name, self.username or self.email)
 
 
-class Issue(Model):
+@dataclass
+class Issue:
+    key: str
+    summary: Optional[str] = None
+    description: Optional[str] = None
+    creator: Optional[UserDetails] = None
+    created: Optional[datetime] = None
+    resolutiondate: Optional[datetime] = None
+    assignee: Optional[UserDetails] = None
+    status: Optional['StatusDetails'] = None
+    resolution: Optional['Resolution'] = None
+    links: List['IssueLink'] = field(default_factory=list)
+    labels: Optional[List[str]] = None
+    customfields: Dict[str, Any] = field(default_factory=dict)
+
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Issue':
         issue = cls(json['key'])
@@ -64,36 +75,27 @@ class Issue(Model):
 
         return issue
 
-    def __init__(self, key: str):
-        self.key = key
-        self.summary = None
-        self.description = None
-        self.creator: Optional[UserDetails] = None
-        self.created: Optional[datetime] = None
-        self.resolutiondate: Optional[datetime] = None
-        self.assignee: Optional[UserDetails] = None
-        self.status: Optional['StatusDetails'] = None
-        self.resolution: Optional[Resolution] = None
-        self.links: List['IssueLink'] = []
-        self.labels: Optional[List[str]] = None
-        self.customfields: Dict[str, Any] = {}
-
     def __str__(self):
         return self.key
 
 
-class IssueLinkType(Model):
+@dataclass
+class IssueLinkType:
+    name: str
+    inward: str
+    outward: str
+
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'IssueLinkType':
         return cls(json['name'], json['inward'], json['outward'])
 
-    def __init__(self, name: str, inward: str, outward: str):
-        self.name = name
-        self.inward = inward
-        self.outward = outward
 
+@dataclass
+class IssueLink:
+    link_type: IssueLinkType
+    inward_issue: Optional[Issue] = None
+    outward_issue: Optional[Issue] = None
 
-class IssueLink(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'IssueLink':
         link_type = IssueLinkType.from_json(json['type'])
@@ -106,16 +108,6 @@ class IssueLink(Model):
             issue_link.inward_issue = Issue.from_json(json['inwardIssue'])
 
         return issue_link
-
-    def __init__(
-        self,
-        link_type: IssueLinkType,
-        inward_issue: Optional[Issue] = None,
-        outward_issue: Optional[Issue] = None,
-    ):
-        self.link_type = link_type
-        self.inward_issue = inward_issue
-        self.outward_issue = outward_issue
 
     def __str__(self) -> str:
         if self.outward_issue:
@@ -132,40 +124,43 @@ class IssueLink(Model):
         )
 
 
-class TransitionField(Model):
+@dataclass
+class TransitionField:
+    id: str
+    name: str
+    is_required: bool
+
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'TransitionField':
         return cls(
             id=json['fieldId'], name=json.get('name'), is_required=json.get('required')
         )
 
-    def __init__(self, id: str, name: str, is_required: bool):
-        self.id = id
-        self.name = name
-        self.is_required = is_required
-
     def __str__(self) -> str:
         return self.name
 
 
-class Transition(Model):
+@dataclass
+class Transition:
+    id: str
+    name: str
+    fields: Optional[List[TransitionField]]
+
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Transition':
         fields = list(map(TransitionField.from_json, json.get('fields', {}).values()))
         return cls(json['id'], json['name'], fields)
 
-    def __init__(
-        self, identifier: str, name: str, fields: Optional[List[TransitionField]] = None
-    ):
-        self.id = identifier
-        self.name = name
-        self.fields = fields
-
     def __str__(self) -> str:
         return self.name
 
 
-class Comment(Model):
+@dataclass
+class Comment:
+    id: str
+    body: str
+    author: Optional[UserDetails] = None
+
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Comment':
         comment = cls(json['id'], json['body'])
@@ -175,16 +170,17 @@ class Comment(Model):
 
         return comment
 
-    def __init__(self, identifier: str, body: str):
-        self.id = identifier
-        self.body = body
-        self.author: Optional[UserDetails] = None
-
     def __str__(self) -> str:
         return self.body
 
 
-class Comments(Model):
+@dataclass
+class Comments:
+    comments: List[Comment]
+    start_at: int
+    max_results: int
+    total: int
+
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Comments':
         return cls(
@@ -194,34 +190,28 @@ class Comments(Model):
             total=json['total'],
         )
 
-    def __init__(
-        self,
-        comments: List[Comment],
-        start_at: int,
-        max_results: int,
-        total: int,
-    ):
-        self.comments = comments
-        self.start_at = start_at
-        self.max_results = max_results
-        self.total = total
 
+@dataclass
+class Sprint:
+    identifier: str
+    name: str
+    state: Any
 
-class Sprint(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Sprint':
         return cls(json['id'], json['name'], json['state'])
-
-    def __init__(self, identifier: str, name: str, state):
-        self.id = identifier
-        self.name = name
-        self.state = state
 
     def __str__(self) -> str:
         return self.name
 
 
-class StatusDetails(Model):
+@dataclass
+class StatusDetails:
+    identifier: str
+    name: str
+    description: Optional[str]
+    status_category: 'StatusCategory'
+
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'StatusDetails':
         return cls(
@@ -231,37 +221,30 @@ class StatusDetails(Model):
             StatusCategory.from_json(json['statusCategory']),
         )
 
-    def __init__(
-        self,
-        identifier: str,
-        name: str,
-        description: Optional[str],
-        status_category: 'StatusCategory',
-    ):
-        self.id = identifier
-        self.name = name
-        self.description = description
-        self.status_category = status_category
-
     def __str__(self) -> str:
         return self.name
 
 
-class Resolution(Model):
+@dataclass
+class Resolution:
+    identifier: str
+    name: str
+    description: Optional[str]
+
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Resolution':
         return cls(json['id'], json['name'], json.get('description', None))
 
-    def __init__(self, identifier: str, name: str, description: Optional[str]):
-        self.id = identifier
-        self.name = name
-        self.description = description
-
     def __str__(self) -> str:
         return self.name
 
 
-class Attachment(Model):
+@dataclass
+class Attachment:
+    filename: Optional[str]
+    size: int
+    author: UserDetails
+
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'Attachment':
         return cls(
@@ -270,14 +253,16 @@ class Attachment(Model):
             UserDetails.from_json(json['author']),
         )
 
-    def __init__(self, filename: Optional[str], size: int, author: UserDetails):
-        self.filename = filename
-        self.size = size
-        self.author = author
 
-
-class SearchResults(Model):
+@dataclass
+class SearchResults:
     # https://docs.atlassian.com/software/jira/docs/api/REST/8.22.6/#search-search
+
+    issues: List[Issue]
+    expand: List[str]
+    start_at: int
+    max_results: int
+    total: int
 
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'SearchResults':
@@ -289,49 +274,19 @@ class SearchResults(Model):
             total=json['total'],
         )
 
-    def __init__(
-        self,
-        issues: List[Issue],
-        expand: List[str],
-        start_at: int,
-        max_results: int,
-        total: int,
-    ):
-        self.issues = issues
-        self.expand = expand
-        self.start_at = start_at
-        self.max_results = max_results
-        self.total = total
-
     def __repr__(self) -> str:
         return f'<SearchResults issues={len(self.issues)} start_at={self.start_at} total={self.total}>'
 
 
-"""
-class IssueType(object):
-    id
-    description
-    name
+@dataclass
+class StatusCategory:
+    id: str
+    key: str
+    name: str
 
-class Issue(object):
-    issue type
-    creator
-    assignee
-    url
-    summary
-    description
-"""
-
-
-class StatusCategory(Model):
     @classmethod
     def from_json(cls, json: Dict[str, Any]) -> 'StatusCategory':
         return cls(json['id'], json['key'], json['name'])
-
-    def __init__(self, identifier: str, key: str, name: str):
-        self.id = identifier
-        self.key = key
-        self.name = name
 
     def __str__(self) -> str:
         return self.name
