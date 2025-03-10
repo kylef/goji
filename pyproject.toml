@@ -6,7 +6,7 @@ authors = ["Kyle Fuller <kyle@fuller.li>"]
 license = "BSD"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.9"
 click = "^7.1.2"
 requests = {extras = ["socks"], version = "^2.27.1"}
 toml = "^0.10.2"
