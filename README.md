@@ -4,16 +4,17 @@ goji is a command line client for JIRA.
 
 ## Installation
 
-Installation on macOS using [Homebrew](https://brew.sh/):
+Installation using [pipx](https://pipx.pypa.io/latest/installation/) is
+recommended:
 
 ```shell
-$ brew install kylef/formulae/goji
+$ pipx install goji
 ```
 
-Install goji using pip:
+Alternatively, install goji using pip:
 
 ```shell
-$ pip install goji
+$ pip install --user goji
 ```
 
 ## Configuration
@@ -40,7 +41,6 @@ $ goji whoami
 ```
 
 ### Without Configuration File
-
 
 ```bash
 $ export GOJI_BASE_URL=https://example.atlassian.net
