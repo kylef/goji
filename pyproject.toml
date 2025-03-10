@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "goji"
-version = "0.5.0"
+version = "0.6.0"
 description = "Command line JIRA client"
 authors = ["Kyle Fuller <kyle@fuller.li>"]
 license = "BSD"
