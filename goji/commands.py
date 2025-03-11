@@ -228,7 +228,7 @@ def edit(client: JIRAClient, field, description: Optional[str], summary: Optiona
     if description is None:
         description = click.edit(issue.description)
 
-    if description is not None and description.strip() != (issue.description or '').strip():
+    if description and description.strip() != (issue.description or '').strip():
         update['description'] = description.strip()
 
     if field:
