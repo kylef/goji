@@ -211,11 +211,12 @@ def comment(client: JIRAClient, message: Optional[str], issue_key: str) -> None:
 
 
 @click.argument('issue_key')
+@click.option('--field', nargs=2, multiple=True, help='Sets a custom field')
 @click.option('--description', help='Sets a new issue description')
 @click.option('--summary', help='Sets a new issue summary')
 @cli.command()
 @click.pass_obj
-def edit(client: JIRAClient, description: Optional[str], summary: Optional[str], issue_key: str) -> None:
+def edit(client: JIRAClient, field, description: Optional[str], summary: Optional[str], issue_key: str) -> None:
     """Edit issue description"""
 
     issue = client.get_issue(issue_key)
@@ -229,6 +230,10 @@ def edit(client: JIRAClient, description: Optional[str], summary: Optional[str],
 
     if description is not None and description.strip() != (issue.description or '').strip():
         update['description'] = description.strip()
+
+    if field:
+        for (name, value) in field:
+            update[name] = value
 
     if len(update) == 0:
         return

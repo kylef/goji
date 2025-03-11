@@ -43,3 +43,21 @@ def test_edit_description(invoke, server: JIRAServer) -> None:
             'description': 'new description',
         }
     }
+
+
+def test_edit_custom_field(invoke, server: JIRAServer) -> None:
+    server.set_issue_response()
+    server.require_method = None
+
+    result = invoke('edit', 'GOJI-1', '--field', 'customfield_1', 'new', '--description', 'new description')
+
+    assert result.output == 'GOJI-1 updated.\n'
+    assert result.exit_code == 0
+
+    assert server.last_request.method == 'PUT'
+    assert server.last_request.body == {
+        'fields': {
+            'description': 'new description',
+            'customfield_1': 'new',
+        }
+    }

@@ -1,5 +1,11 @@
 # GOJI Changelog
 
+## TBD
+
+### Enhancements
+
+- `goji edit` supports setting summary and custom fields on an issue.
+
 ## 0.6.0 (2025/03/10)
 
 ### Enhancements
