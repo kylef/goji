@@ -218,12 +218,11 @@ def edit(client: JIRAClient, issue_key: str) -> None:
     issue = client.get_issue(issue_key)
     description = click.edit(issue.description)
 
-    assert issue.description
-    if description is not None and description.strip() != issue.description.strip():
+    if description is not None and description.strip() != (issue.description or '').strip():
         try:
             client.edit_issue(issue_key, {'description': description.strip()})
             click.echo(
-                'Okay, the description for {} has been updated.'.format(issue_key)
+                '{} description updated.'.format(issue_key)
             )
         except Exception as e:
             click.echo('There was an issue saving the new description:')
