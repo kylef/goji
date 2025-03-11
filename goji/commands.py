@@ -211,24 +211,38 @@ def comment(client: JIRAClient, message: Optional[str], issue_key: str) -> None:
 
 
 @click.argument('issue_key')
+@click.option('--description', help='Sets a new issue description')
+@click.option('--summary', help='Sets a new issue summary')
 @cli.command()
 @click.pass_obj
-def edit(client: JIRAClient, issue_key: str) -> None:
+def edit(client: JIRAClient, description: Optional[str], summary: Optional[str], issue_key: str) -> None:
     """Edit issue description"""
+
     issue = client.get_issue(issue_key)
-    description = click.edit(issue.description)
+    update = {}
+
+    if summary and summary != issue.summary:
+        update['summary'] = summary
+
+    if description is None:
+        description = click.edit(issue.description)
 
     if description is not None and description.strip() != (issue.description or '').strip():
-        try:
-            client.edit_issue(issue_key, {'description': description.strip()})
-            click.echo(
-                '{} description updated.'.format(issue_key)
-            )
-        except Exception as e:
-            click.echo('There was an issue saving the new description:')
-            click.echo(description)
-            click.echo('')
-            raise e
+        update['description'] = description.strip()
+
+    if len(update) == 0:
+        return
+
+    try:
+        client.edit_issue(issue_key, update)
+        click.echo(
+            '{} updated.'.format(issue_key)
+        )
+    except Exception as e:
+        click.echo('Could not update issue:')
+        click.echo(update)
+        click.echo('')
+        raise e
 
 
 @click.argument('attachments', type=click.File('rb'), nargs=-1)
