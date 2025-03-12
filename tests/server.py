@@ -125,6 +125,7 @@ class JIRAServer(object):
         self.responses: Optional[List[Response]] = None
         self.require_method: Optional[str] = None
         self.require_path: Optional[str] = None
+        self.got_request = lambda : None
 
     def shutdown(self) -> None:
         self.server.shutdown()

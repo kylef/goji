@@ -1,29 +1,4 @@
-import unittest
-from typing import List
-
-from click.testing import CliRunner
-
-from goji.commands import cli
-from goji.models import Transition
 from tests.server import OPEN_STATUS, JIRAServer
-
-
-class TestClient(object):
-    base_url = 'https://goji.example.com/'
-    username = 'kyle'
-
-    def get_issue_transitions(self, issue_key: str) -> List[Transition]:
-        if issue_key == 'invalid':
-            return []
-        else:
-            return [
-                Transition('31', 'Unstarted'),
-                Transition('21', 'Going'),
-                Transition('1', 'Done'),
-            ]
-
-    def change_status(self, issue_key: str, transition_id: str) -> None:
-        pass
 
 
 def test_change_status_invalid_issue_key(invoke, server: JIRAServer) -> None:
