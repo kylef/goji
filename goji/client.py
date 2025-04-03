@@ -48,11 +48,16 @@ class JIRAClient(object):
     # Methods
 
     def validate_response(self, response: requests.Response) -> None:
-        if response.status_code >= 400 and 'application/json' in response.headers.get(
+        if response.status_code < 400:
+            return
+
+        if 'application/json' in response.headers.get(
             'Content-Type', ''
         ):
             error = response.json()
             raise JIRAException(error.get('errorMessages', []), error.get('errors', {}))
+
+        raise click.ClickException(f'JIRA returned {response.status_code}')
 
     def get(self, path: str, **kwargs) -> requests.Response:
         url = urljoin(self.rest_base_url, path)
@@ -81,19 +86,16 @@ class JIRAClient(object):
 
     def get_user(self) -> Optional[UserDetails]:
         response = self.get('myself', allow_redirects=False)
-        response.raise_for_status()
         return UserDetails.from_json(response.json())
 
     def get_issue(self, issue_key: str) -> Issue:
         response = self.get('issue/%s' % issue_key)
-        response.raise_for_status()
         return Issue.from_json(response.json())
 
     def get_issue_transitions(self, issue_key: str) -> List[Transition]:
         response = self.get(
             'issue/%s/transitions' % issue_key, params={'expand': 'transitions.fields'}
         )
-        response.raise_for_status()
         return list(map(Transition.from_json, response.json()['transitions']))
 
     def change_status(self, issue_key: str, transition_id: str) -> None:
@@ -141,8 +143,7 @@ class JIRAClient(object):
         return Issue.from_json(response.json())
 
     def assign(self, issue_key: str, name: Optional[str]) -> None:
-        response = self.put('issue/%s/assignee' % issue_key, {'name': name})
-        response.raise_for_status()
+        self.put('issue/%s/assignee' % issue_key, {'name': name})
 
     def comment(self, issue_key: str, comment: str) -> Comment:
         response = self.post('issue/%s/comment' % issue_key, {'body': comment})
@@ -171,7 +172,6 @@ class JIRAClient(object):
             body['fields'] = fields
 
         response = self.post('search', body)
-        response.raise_for_status()
         return SearchResults.from_json(response.json())
 
     def search_all(
