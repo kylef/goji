@@ -13,6 +13,7 @@ from requests.compat import urljoin
 from goji.auth import get_credentials, set_credentials
 from goji.client import JIRAClient
 from goji.config import Configuration
+from goji.report import generate_report
 from goji.utils import Datetime
 
 
@@ -399,6 +400,14 @@ def search(client: JIRAClient, all: bool, count: bool, format: str, limit: Optio
         format_kwargs.update(issue.customfields)
 
         click.echo(format.replace('\\n', '\n').format(**format_kwargs))
+
+
+@cli.command()
+@click.argument('input', type=click.File('r'))
+@click.option('-o', '--output', type=click.File('w'), default='-')
+@click.pass_obj
+def report(client: JIRAClient, input, output) -> None:
+    generate_report(client, input, output)
 
 
 @cli.group('sprint')

@@ -6,6 +6,8 @@
 
 - `goji edit` supports setting summary and custom fields on an issue.
 
+- New `goji report` command allowing generation of HTML reports.
+
 ## 0.6.0 (2025/03/10)
 
 ### Enhancements
