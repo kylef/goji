@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 import toml
 
 from goji.client import JIRAClient
+from goji.models import Issue
 
 HTML_ESCAPE_DICT = {
     '<': '&lt;',
@@ -144,12 +145,10 @@ class IssueListWidget(Widget):
         kwargs['fields'] = config.pop('fields', ['key'])
         return super().from_config(client, config, **kwargs)
 
-    def __init__(self, client: JIRAClient, title: Optional[str], fields: List[str]):
+    def __init__(self, client: JIRAClient, title: Optional[str], fields: List[str], issues: List[Issue]):
         self.fields = fields
+        self.issues = issues
         super().__init__(client, title)
-
-    def get_issues(self):
-        return NotImplemented
 
     def render(self, output) -> None:
         title = self.title or 'Search'
@@ -164,7 +163,7 @@ class IssueListWidget(Widget):
 
         # Rows
         output.write('<tbody>')
-        for issue in self.get_issues():
+        for issue in self.issues:
             output.write('<tr>')
             for field in self.fields:
                 if field in issue.customfields:
@@ -189,17 +188,9 @@ class IssueListWidget(Widget):
 class SearchWidget(IssueListWidget):
     @classmethod
     def from_config(cls, client: JIRAClient, config: Dict[str, Any], **kwargs):
-        kwargs['query'] = config.pop('query', '')
+        query = config.pop('query', '')
+        kwargs['issues'] = list(client.search_all(query=query, fields=config['fields']))
         return super().from_config(client, config, **kwargs)
-
-    def __init__(
-        self, client: JIRAClient, title: Optional[str], fields: List[str], query: str
-    ):
-        self.query = query
-        super().__init__(client, title, fields)
-
-    def get_issues(self):
-        return self.client.search_all(query=self.query, fields=self.fields)
 
 
 class StatisticsWidget(Widget):
