@@ -1,12 +1,11 @@
-from collections import Counter
 import importlib
-from typing import Any, Dict
+from collections import Counter
+from typing import Any, Dict, Optional, List
 from urllib.parse import urljoin
 
 import toml
 
 from goji.client import JIRAClient
-
 
 HTML_ESCAPE_DICT = {
     '<': '&lt;',
@@ -25,24 +24,48 @@ def html_escape(text: str) -> str:
 
 
 class Widget:
-    def __init__(self, client: JIRAClient, config: Dict[str, Any]):
-        self.client = client
-        self.title = config.pop('title', None)
+    @classmethod
+    def from_config(cls, client: JIRAClient, config: Dict[str, Any], **kwargs):
+        title = config.pop('title', None)
 
         if len(config) != 0:
             keys = ', '.join(config.keys())
             raise ValueError(f'Unknown fields {keys}')
 
+        return cls(client, title, **kwargs)
+
+    def __init__(self, client: JIRAClient, title: Optional[str]):
+        self.client = client
+        self.title = title
+
     def render(self, output) -> None:
         pass
 
 
-class IssueListWidget(Widget):
-    def __init__(self, client: JIRAClient, config: Dict[str, Any]):
-        self.client = client
-        self.fields = config.pop('fields', ['key'])
+class ReportWidget(Widget):
+    def __init__(self, title: str, widgets):
+        self.title = title
+        self.widgets = widgets
 
-        super().__init__(client, config)
+    def render(self, output) -> None:
+        output.write('<section>')
+        output.write('<h1>Report</h1>')
+
+        for widget in self.widgets:
+            widget.render(output)
+
+        output.write('</section>')
+
+
+class IssueListWidget(Widget):
+    @classmethod
+    def from_config(cls, client: JIRAClient, config: Dict[str, Any], **kwargs):
+        kwargs['fields'] = config.pop('fields', ['key'])
+        return super().from_config(client, config, **kwargs)
+
+    def __init__(self, client: JIRAClient, title: Optional[str], fields: List[str]):
+        self.fields = fields
+        super().__init__(client, title)
 
     def get_issues(self):
         return NotImplemented
@@ -81,23 +104,41 @@ class IssueListWidget(Widget):
 
 
 class SearchWidget(IssueListWidget):
-    def __init__(self, client: JIRAClient, config: Dict[str, Any]):
-        self.query = config.pop('query')
+    @classmethod
+    def from_config(cls, client: JIRAClient, config: Dict[str, Any], **kwargs):
+        kwargs['query'] = config.pop('query', '')
+        return super().from_config(client, config, **kwargs)
 
-        super().__init__(client, config)
+    def __init__(
+        self, client: JIRAClient, title: Optional[str], fields: List[str], query: str
+    ):
+        self.query = query
+        super().__init__(client, title, fields)
 
     def get_issues(self):
         return self.client.search_all(query=self.query, fields=self.fields)
 
 
 class StatisticsWidget(Widget):
-    def __init__(self, client: JIRAClient, config: Dict[str, Any]):
-        self.client = client
-        self.query = config.pop('query')
-        self.statistic_type = config.pop('statistic_type')
-        self.results = config.pop('results', 10)
+    @classmethod
+    def from_config(cls, client: JIRAClient, config: Dict[str, Any], **kwargs):
+        kwargs['query'] = config.pop('query', '')
+        kwargs['statistic_type'] = config.pop('statistic_type', '')
+        kwargs['results'] = config.pop('results', 10)
+        return super().from_config(client, config, **kwargs)
 
-        super().__init__(client, config)
+    def __init__(
+        self,
+        client: JIRAClient,
+        title: Optional[str],
+        query: str,
+        statistic_type: str,
+        results: int,
+    ):
+        self.query = query
+        self.statistic_type = statistic_type
+        self.results = results
+        super().__init__(client, title)
 
     def get_issues(self):
         if self.statistic_type == 'assignee':
@@ -157,17 +198,21 @@ WIDGETS = {
 }
 
 
-def generate_report(client: JIRAClient, input, output) -> None:
+def create_widget(client, config) -> Widget:
+    widget_type = config['type']
+    del config['type']
+
+    if widget_type in WIDGETS:
+        widget_cls = WIDGETS[widget_type]
+    else:
+        module, _, cls_name = widget_type.rpartition('.')
+        widget_cls = getattr(importlib.import_module(module), cls_name)
+
+    return widget_cls.from_config(client, config)
+
+
+def generate_report(client: JIRAClient, input) -> Widget:
     config = toml.load(input)
-    for config in config['widget']:
-        widget_type = config['type']
-        del config['type']
-
-        if widget_type in WIDGETS:
-            widget = WIDGETS[widget_type](client, config)
-        else:
-            module, _, cls_name = widget_type.rpartition('.')
-            widget_cls = getattr(importlib.import_module(module), cls_name)
-            widget = widget_cls(client, config)
-
-        widget.render(output)
+    return ReportWidget(
+        'Report', [create_widget(client, cfg) for cfg in config['widget']]
+    )

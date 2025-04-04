@@ -407,7 +407,7 @@ def search(client: JIRAClient, all: bool, count: bool, format: str, limit: Optio
 @click.option('-o', '--output', type=click.File('w'), default='-')
 @click.pass_obj
 def report(client: JIRAClient, input, output) -> None:
-    generate_report(client, input, output)
+    generate_report(client, input).render(output)
 
 
 @cli.group('sprint')
