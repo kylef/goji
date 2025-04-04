@@ -1,12 +1,13 @@
 import importlib
 from collections import Counter
-from typing import Any, Dict, Optional, List
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
 import toml
 
 from goji.client import JIRAClient
-from goji.models import Issue
+from goji.models import Issue, UserDetails
 
 HTML_ESCAPE_DICT = {
     '<': '&lt;',
@@ -145,10 +146,22 @@ class IssueListWidget(Widget):
         kwargs['fields'] = config.pop('fields', ['key'])
         return super().from_config(client, config, **kwargs)
 
-    def __init__(self, client: JIRAClient, title: Optional[str], fields: List[str], issues: List[Issue]):
+    def __init__(
+        self,
+        client: JIRAClient,
+        title: Optional[str],
+        fields: List[str],
+        issues: List[Issue],
+    ):
         self.fields = fields
         self.issues = issues
         super().__init__(client, title)
+
+    def get_assignee(self, issue: Issue) -> str:
+        if issue.assignee is None:
+            return 'Unassigned'
+
+        return issue.assignee.name
 
     def render(self, output) -> None:
         title = self.title or 'Search'
@@ -156,9 +169,13 @@ class IssueListWidget(Widget):
         output.write('<table>')
 
         # Header
+        field_titles = {
+            'key': '#',
+        }
         output.write('<thead><tr>')
         for field in self.fields:
-            output.write(f'<th>{html_escape(field)}</th>')
+            field_title = field_titles.get(field, field.capitalize())
+            output.write(f'<th>{html_escape(field_title)}</th>')
         output.write('</tr></thead>')
 
         # Rows
@@ -166,18 +183,29 @@ class IssueListWidget(Widget):
         for issue in self.issues:
             output.write('<tr>')
             for field in self.fields:
-                if field in issue.customfields:
+                if hasattr(self, f'get_{field}'):
+                    value = getattr(self, f'get_{field}')(issue)
+                elif field in issue.customfields:
                     value = issue.customfields[field]
                 else:
                     value = getattr(issue, field)
+
+                if isinstance(value, datetime):
+                    value = value.strftime('%y-%m-%d %H:%M')
+                elif isinstance(value, UserDetails):
+                    value = value.name
+                elif isinstance(value, list):
+                    value = ', '.join([str(v) for v in value])
 
                 if field == 'key':
                     url = urljoin(self.client.base_url, f'browse/{issue.key}')
                     output.write(
                         f'<td><a href="{html_escape(url)}">{html_escape(value)}</a></td>'
                     )
+                elif value:
+                    output.write(f'<td>{html_escape(str(value))}</td>')
                 else:
-                    output.write(f'<td>{html_escape(value)}</td>')
+                    output.write(f'<td></td>')
 
             output.write('</tr>')
         output.write('</tbody>')
@@ -245,7 +273,7 @@ class StatisticsWidget(Widget):
             if issue.assignee is None:
                 counter['Unassigned'] += 1
             else:
-                counter[issue.assignee] += 1
+                counter[issue.assignee.name] += 1
 
         # Rows
         output.write('<tbody>')
