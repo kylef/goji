@@ -16,6 +16,80 @@ HTML_ESCAPE_DICT = {
 }
 
 
+CSS = '''
+body {
+  --background-color: #f1f1f1;
+  --foreground-color: rgb(62, 67, 73);
+  --secondary-color: #e9ecef;
+}
+
+body {
+  font-family: Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.4;
+
+  padding: 30px;
+
+  background: var(--background-color);
+  color: var(--foreground-color);
+}
+
+@media screen and (max-width: 680px) {
+  body { padding: 10px; }
+}
+
+::selection {
+  background: var(--secondary-color);
+}
+
+main {
+  max-width: 750px;
+  overflow-wrap: break-word;
+}
+
+/* Inline Text */
+
+a {
+  color: var(--foreground-color);
+  text-decoration: none;
+  border-bottom: 1px solid var(--foreground-color);
+}
+
+a:hover {
+  background: var(--foreground-color);
+  color: var(--background-color);
+  border-bottom: 1px solid var(--background-color);
+}
+
+/* Table */
+
+table {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 1rem;
+  background-color: transparent;
+}
+
+thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
+}
+
+th {
+  padding: .75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+td {
+  padding: .75rem;
+  border-bottom: 1px solid #dee2e6;
+}
+'''
+
+
 def html_escape(text: str) -> str:
     for escape in HTML_ESCAPE_DICT:
         text = text.replace(escape, HTML_ESCAPE_DICT[escape])
@@ -48,13 +122,20 @@ class ReportWidget(Widget):
         self.widgets = widgets
 
     def render(self, output) -> None:
-        output.write('<section>')
+        output.write('<html>')
+        output.write('<head>')
+        output.write(f'<style>{CSS}</style>')
+        output.write('</head>')
+        output.write('<body>')
+        output.write('<main>')
         output.write('<h1>Report</h1>')
 
         for widget in self.widgets:
             widget.render(output)
 
-        output.write('</section>')
+        output.write('</main>')
+        output.write('</body>')
+        output.write('</html>')
 
 
 class IssueListWidget(Widget):
@@ -76,12 +157,13 @@ class IssueListWidget(Widget):
         output.write('<table>')
 
         # Header
-        output.write('<tr>')
+        output.write('<thead><tr>')
         for field in self.fields:
             output.write(f'<th>{html_escape(field)}</th>')
-        output.write('</tr>')
+        output.write('</tr></thead>')
 
         # Rows
+        output.write('<tbody>')
         for issue in self.get_issues():
             output.write('<tr>')
             for field in self.fields:
@@ -99,6 +181,7 @@ class IssueListWidget(Widget):
                     output.write(f'<td>{html_escape(value)}</td>')
 
             output.write('</tr>')
+        output.write('</tbody>')
 
         output.write('</table>')
 
