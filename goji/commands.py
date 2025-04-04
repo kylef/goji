@@ -1,8 +1,8 @@
-from functools import partial
 import importlib
 import io
 import pkgutil
 import sys
+from functools import partial
 from os import isatty
 from string import Formatter
 from typing import Optional
@@ -11,17 +11,19 @@ import click
 from requests.compat import urljoin
 
 from goji.auth import get_credentials, set_credentials
-from goji.client import JIRAClient
+from goji.client import JIRAClient, JIRAException
 from goji.config import Configuration
 from goji.report import generate_report
 from goji.utils import Datetime
 
 
 def check_login(client) -> None:
-    response = client.get('myself', allow_redirects=False)
-
-    if response.status_code == 401:
-        raise click.ClickException('Incorrect credentials. Try `goji login`.')
+    try:
+        client.get('myself', allow_redirects=False)
+    except JIRAException as e:
+        if e.status_code == 401:
+            raise click.ClickException('Incorrect credentials. Try `goji login`.')
+        raise
 
 
 @click.group()

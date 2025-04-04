@@ -7,12 +7,22 @@ import requests
 from requests.auth import AuthBase, HTTPBasicAuth
 from requests.compat import urljoin
 
-from goji.models import (Attachment, Comment, Comments, Issue, IssueLinkType,
-                         SearchResults, Sprint, Transition, UserDetails)
+from goji.models import (
+    Attachment,
+    Comment,
+    Comments,
+    Issue,
+    IssueLinkType,
+    SearchResults,
+    Sprint,
+    Transition,
+    UserDetails,
+)
 
 
 class JIRAException(click.ClickException):
-    def __init__(self, error_messages: List[str], errors):
+    def __init__(self, status_code: int, error_messages: List[str], errors):
+        self.status_code = status_code
         self.error_messages = error_messages
         self.errors = errors
 
@@ -20,7 +30,7 @@ class JIRAException(click.ClickException):
         for error in self.error_messages:
             click.echo(error)
 
-        for (key, error) in self.errors.items():
+        for key, error in self.errors.items():
             click.echo('- {}: {}'.format(key, error))
 
 
@@ -51,13 +61,11 @@ class JIRAClient(object):
         if response.status_code < 400:
             return
 
-        if 'application/json' in response.headers.get(
-            'Content-Type', ''
-        ):
+        if 'application/json' in response.headers.get('Content-Type', ''):
             error = response.json()
-            raise JIRAException(error.get('errorMessages', []), error.get('errors', {}))
+            raise JIRAException(response.status_code, error.get('errorMessages', []), error.get('errors', {}))
 
-        raise click.ClickException(f'JIRA returned {response.status_code}')
+        raise JIRAException(response.status_code, [f'JIRA returned {response.status_code}'], {})
 
     def get(self, path: str, **kwargs) -> requests.Response:
         url = urljoin(self.rest_base_url, path)
