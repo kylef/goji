@@ -225,7 +225,7 @@ class StatisticsWidget(Widget):
     @classmethod
     def from_config(cls, client: JIRAClient, config: Dict[str, Any], **kwargs):
         kwargs['query'] = config.pop('query', '')
-        kwargs['statistic_type'] = config.pop('statistic_type', '')
+        kwargs['field'] = config.pop('field', '')
         kwargs['results'] = config.pop('results', 10)
         return super().from_config(client, config, **kwargs)
 
@@ -234,21 +234,16 @@ class StatisticsWidget(Widget):
         client: JIRAClient,
         title: Optional[str],
         query: str,
-        statistic_type: str,
+        field: str,
         results: int,
     ):
         self.query = query
-        self.statistic_type = statistic_type
+        self.field = field
         self.results = results
         super().__init__(client, title)
 
     def get_issues(self):
-        if self.statistic_type == 'assignee':
-            fields = ['assignee']
-        else:
-            raise ValueError(f'Unknown statistic type {self.statistic_type}')
-
-        return self.client.search_all(query=self.query, fields=fields)
+        return self.client.search_all(query=self.query, fields=[self.field])
 
     def render(self, output) -> None:
         title = self.title or 'Statistics'
@@ -257,23 +252,25 @@ class StatisticsWidget(Widget):
 
         # Header
         output.write('<thead><tr>')
-        if self.statistic_type == 'assignee':
-            output.write(f'<th>Assignee</th>')
-        else:
-            raise ValueError(f'Unknown statistic type {self.statistic_type}')
+        output.write(f'<th>{html_escape(self.field.capitalize())}</th>')
         output.write(f'<th>Count</th>')
         output.write('</tr></thead>')
 
         counter = Counter()
 
         for issue in self.get_issues():
-            if self.statistic_type != 'assignee':
-                raise ValueError(f'Unknown statistic type {self.statistic_type}')
+            value = getattr(issue, self.field)
+            if self.field == 'assignee' and value is None:
+                value = 'Unassigned'
 
-            if issue.assignee is None:
-                counter['Unassigned'] += 1
+            if isinstance(value, UserDetails):
+                value = value.name
+
+            if self.field == 'labels':
+                for label in value:
+                    counter[str(label)] += 1
             else:
-                counter[issue.assignee.name] += 1
+                counter[str(value)] += 1
 
         # Rows
         output.write('<tbody>')
