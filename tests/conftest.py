@@ -22,6 +22,11 @@ def server(global_server) -> Iterator[JIRAServer]:
 
 
 @pytest.fixture()
+def client(server: JIRAServer) -> JIRAClient:
+    return JIRAClient(server.url, ('username', 'password'))
+
+
+@pytest.fixture()
 def runner() -> CliRunner:
     return CliRunner()
 

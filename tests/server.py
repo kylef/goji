@@ -1,5 +1,4 @@
 import json
-import unittest
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from threading import Thread
 from typing import Any, Dict, List, Optional
@@ -13,19 +12,6 @@ OPEN_STATUS = {
         'name': 'c',
     },
 }
-
-
-class ServerTestCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.server = JIRAServer()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.server.shutdown()
-
-    def setUp(self):
-        self.server.reset()
 
 
 class Request(object):
