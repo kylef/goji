@@ -63,9 +63,15 @@ class JIRAClient(object):
 
         if 'application/json' in response.headers.get('Content-Type', ''):
             error = response.json()
-            raise JIRAException(response.status_code, error.get('errorMessages', []), error.get('errors', {}))
+            raise JIRAException(
+                response.status_code,
+                error.get('errorMessages', []),
+                error.get('errors', {}),
+            )
 
-        raise JIRAException(response.status_code, [f'JIRA returned {response.status_code}'], {})
+        raise JIRAException(
+            response.status_code, [f'JIRA returned {response.status_code}'], {}
+        )
 
     def get(self, path: str, **kwargs) -> requests.Response:
         url = urljoin(self.rest_base_url, path)

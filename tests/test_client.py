@@ -243,36 +243,42 @@ class ClientTests(ServerTestCase):
     def test_search_all_two_page(self):
         self.server.response = None
         self.server.responses = [
-            Response(200, {
-                'issues': [
-                    {
-                        'key': 'GOJI-1',
-                        'fields': {
-                            'summary': 'Hello World',
-                            'description': 'One\nTwo\nThree\n',
-                            'status': OPEN_STATUS,
-                        },
-                    }
-                ],
-                'startAt': 0,
-                'maxResults': 1,
-                'total': 2,
-            }),
-            Response(200, {
-                'issues': [
-                    {
-                        'key': 'GOJI-2',
-                        'fields': {
-                            'summary': 'Hello World',
-                            'description': 'One\nTwo\nThree\n',
-                            'status': OPEN_STATUS,
-                        },
-                    }
-                ],
-                'startAt': 1,
-                'maxResults': 1,
-                'total': 2,
-            }),
+            Response(
+                200,
+                {
+                    'issues': [
+                        {
+                            'key': 'GOJI-1',
+                            'fields': {
+                                'summary': 'Hello World',
+                                'description': 'One\nTwo\nThree\n',
+                                'status': OPEN_STATUS,
+                            },
+                        }
+                    ],
+                    'startAt': 0,
+                    'maxResults': 1,
+                    'total': 2,
+                },
+            ),
+            Response(
+                200,
+                {
+                    'issues': [
+                        {
+                            'key': 'GOJI-2',
+                            'fields': {
+                                'summary': 'Hello World',
+                                'description': 'One\nTwo\nThree\n',
+                                'status': OPEN_STATUS,
+                            },
+                        }
+                    ],
+                    'startAt': 1,
+                    'maxResults': 1,
+                    'total': 2,
+                },
+            ),
         ]
 
         issues = list(self.client.search_all('PROJECT = GOJI'))
@@ -280,7 +286,9 @@ class ClientTests(ServerTestCase):
 
         self.assertEqual(len(self.server.requests), 2)
         self.assertEqual(self.server.requests[0].body, {'jql': 'PROJECT = GOJI'})
-        self.assertEqual(self.server.requests[1].body, {'jql': 'PROJECT = GOJI', 'startAt': 1})
+        self.assertEqual(
+            self.server.requests[1].body, {'jql': 'PROJECT = GOJI', 'startAt': 1}
+        )
 
     def test_create_sprint(self):
         self.server.response.status_code = 201

@@ -66,7 +66,7 @@ class Configuration:
             raise click.ClickException(message)
 
         profiles: Dict[str, Profile] = {}
-        for (profile, data) in data.get('profile', {}).items():
+        for profile, data in data.get('profile', {}).items():
             if profile.lower() in profiles:
                 raise click.ClickException(f'Profile {profile} defined more than once')
 

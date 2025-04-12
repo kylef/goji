@@ -219,7 +219,13 @@ def comment(client: JIRAClient, message: Optional[str], issue_key: str) -> None:
 @click.option('--summary', help='Sets a new issue summary')
 @cli.command()
 @click.pass_obj
-def edit(client: JIRAClient, field, description: Optional[str], summary: Optional[str], issue_key: str) -> None:
+def edit(
+    client: JIRAClient,
+    field,
+    description: Optional[str],
+    summary: Optional[str],
+    issue_key: str,
+) -> None:
     """Edit issue description"""
 
     issue = client.get_issue(issue_key)
@@ -235,7 +241,7 @@ def edit(client: JIRAClient, field, description: Optional[str], summary: Optiona
         update['description'] = description.strip()
 
     if field:
-        for (name, value) in field:
+        for name, value in field:
             update[name] = value
 
     if len(update) == 0:
@@ -243,9 +249,7 @@ def edit(client: JIRAClient, field, description: Optional[str], summary: Optiona
 
     try:
         client.edit_issue(issue_key, update)
-        click.echo(
-            '{} updated.'.format(issue_key)
-        )
+        click.echo('{} updated.'.format(issue_key))
     except Exception as e:
         click.echo('Could not update issue:')
         click.echo(update)
@@ -350,7 +354,13 @@ def login(base_url: str) -> None:
 @click.option('--list-types/--no-list-types', default=False)
 @cli.command()
 @click.pass_obj
-def link(client: JIRAClient, inward_issue: str, outward_issue: str, type: str, list_types: bool) -> None:
+def link(
+    client: JIRAClient,
+    inward_issue: str,
+    outward_issue: str,
+    type: str,
+    list_types: bool,
+) -> None:
     if list_types:
         types = client.get_issue_link_types()
         for link_type in types:
@@ -368,7 +378,14 @@ def link(client: JIRAClient, inward_issue: str, outward_issue: str, type: str, l
 @click.option('--all', is_flag=True, help='Return all pages of issues')
 @cli.command()
 @click.pass_obj
-def search(client: JIRAClient, all: bool, count: bool, format: str, limit: Optional[int], query: str) -> None:
+def search(
+    client: JIRAClient,
+    all: bool,
+    count: bool,
+    format: str,
+    limit: Optional[int],
+    query: str,
+) -> None:
     """Search issues using JQL"""
 
     if count:
@@ -395,7 +412,11 @@ def search(client: JIRAClient, all: bool, count: bool, format: str, limit: Optio
             resolution=issue.resolution,
         )
 
-        if 'key' in fields and not isinstance(sys.stdout, io.TextIOWrapper) and isatty(sys.stdout.fileno()):
+        if (
+            'key' in fields
+            and not isinstance(sys.stdout, io.TextIOWrapper)
+            and isatty(sys.stdout.fileno())
+        ):
             url = urljoin(client.base_url, 'browse/%s' % issue.key)
             format_kwargs['key'] = f'\033]8;;{url}\a{issue.key}\033]8;;\a'
 

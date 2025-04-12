@@ -47,9 +47,13 @@ class Issue:
             issue.description = fields.get('description')
             issue.creator = UserDetails.from_json(fields.get('creator'))
             if 'created' in fields:
-                issue.created = datetime.fromisoformat(fields['created'].replace('+0000', '+00:00'))
+                issue.created = datetime.fromisoformat(
+                    fields['created'].replace('+0000', '+00:00')
+                )
             if 'resolutiondate' in fields and fields['resolutiondate']:
-                issue.resolutiondate = datetime.fromisoformat(fields['resolutiondate'].replace('+0000', '+00:00'))
+                issue.resolutiondate = datetime.fromisoformat(
+                    fields['resolutiondate'].replace('+0000', '+00:00')
+                )
             issue.assignee = UserDetails.from_json(fields.get('assignee'))
             if 'status' in fields:
                 issue.status = StatusDetails.from_json(fields['status'])
@@ -69,7 +73,7 @@ class Issue:
 
             issue.customfields = {}
 
-            for (key, value) in fields.items():
+            for key, value in fields.items():
                 if key.startswith('customfield_'):
                     issue.customfields[key] = value
 

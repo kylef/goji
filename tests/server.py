@@ -87,9 +87,7 @@ class JIRAServer(object):
 
                 self.send_response(response.status_code)
                 self.send_header('Content-Length', str(len(body)))
-                self.send_header(
-                    'Content-Type', response.headers['Content-Type']
-                )
+                self.send_header('Content-Type', response.headers['Content-Type'])
                 self.end_headers()
                 self.wfile.write(body.encode('utf-8'))
 
@@ -125,7 +123,7 @@ class JIRAServer(object):
         self.responses: Optional[List[Response]] = None
         self.require_method: Optional[str] = None
         self.require_path: Optional[str] = None
-        self.got_request = lambda : None
+        self.got_request = lambda: None
 
     def shutdown(self) -> None:
         self.server.shutdown()
