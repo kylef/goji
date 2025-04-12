@@ -2,7 +2,7 @@
 name = "goji"
 version = "0.6.0"
 description = "Command line JIRA client"
-requires-python = ">=3.9,<4.0"
+requires-python = ">=3.10,<4.0"
 dependencies = [
   "click (>=8.1.8,<9.0.0)",
   "requests[socks] (>=2.27.1, < 3.0.0)",

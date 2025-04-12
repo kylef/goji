@@ -1,6 +1,6 @@
 # GOJI Changelog
 
-## TBD
+## 0.7.0 (2025/04/12)
 
 ### Enhancements
 
