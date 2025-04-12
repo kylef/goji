@@ -144,6 +144,7 @@ class IssueListWidget(Widget):
     @classmethod
     def from_config(cls, client: JIRAClient, config: Dict[str, Any], **kwargs):
         kwargs['fields'] = config.pop('fields', ['key'])
+        kwargs['display_names'] = config.pop('display_names', {})
         return super().from_config(client, config, **kwargs)
 
     def __init__(
@@ -151,9 +152,11 @@ class IssueListWidget(Widget):
         client: JIRAClient,
         title: Optional[str],
         fields: List[str],
+        display_names: Dict[str, str],
         issues: List[Issue],
     ):
         self.fields = fields
+        self.display_names = display_names
         self.issues = issues
         super().__init__(client, title)
 
@@ -163,18 +166,28 @@ class IssueListWidget(Widget):
 
         return issue.assignee.name
 
+    def get_display_name(self, field: str) -> str:
+        field_titles = {
+            'key': '#',
+        }
+
+        if field in self.display_names:
+            return self.display_names[field]
+
+        if field in field_titles:
+            return field_titles[field]
+
+        return field.capitalize()
+
     def render(self, output) -> None:
         title = self.title or 'Search'
         output.write(f'<h2>{html_escape(title)}</h2>')
         output.write('<table>')
 
         # Header
-        field_titles = {
-            'key': '#',
-        }
         output.write('<thead><tr>')
         for field in self.fields:
-            field_title = field_titles.get(field, field.capitalize())
+            field_title = self.get_display_name(field)
             output.write(f'<th>{html_escape(field_title)}</th>')
         output.write('</tr></thead>')
 

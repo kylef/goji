@@ -77,6 +77,7 @@ def test_issue_list_widget(client: JIRAClient):
         client,
         'Test Issues',
         fields=['key', 'summary', 'assignee', 'customfield_10000'],
+        display_names={'customfield_10000': 'Custom Field'},
         issues=issues,
     )
 
@@ -90,7 +91,7 @@ def test_issue_list_widget(client: JIRAClient):
         '<th>#</th>'
         '<th>Summary</th>'
         '<th>Assignee</th>'
-        '<th>Customfield_10000</th>'
+        '<th>Custom Field</th>'
         '</tr></thead>'
         '<tbody><tr>'
         f'<td><a href="{client.base_url}/browse/GOJI-123">GOJI-123</a></td>'
