@@ -1,6 +1,10 @@
 from goji.ansi import text_formatting_to_ansi
 
 
+def test_convert_text():
+    assert text_formatting_to_ansi('test text') == 'test text'
+
+
 def test_convert_bold():
     assert text_formatting_to_ansi('*bold*') == '\x1b[1mbold\x1b[0m'
 

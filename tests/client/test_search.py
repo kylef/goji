@@ -27,6 +27,37 @@ def test_search(client: JIRAClient, server: JIRAServer):
 
     assert len(results.issues) == 1
     assert results.issues[0].key == 'GOJI-1'
+    assert results.total == 1
+    assert results.max_results == 50
+    assert results.start_at == 0
+
+
+def test_search_max_results(client: JIRAClient, server: JIRAServer):
+    server.response.body = {
+        'issues': [
+            {
+                'key': 'GOJI-1',
+                'fields': {
+                    'summary': 'Hello World',
+                    'description': 'One\nTwo\nThree\n',
+                    'status': OPEN_STATUS,
+                },
+            }
+        ],
+        'startAt': 0,
+        'maxResults': 1,
+        'total': 1,
+    }
+
+    results = client.search('PROJECT = GOJI', max_results=1)
+
+    assert server.last_request.method == 'POST'
+    assert server.last_request.path == '/rest/api/2/search'
+    assert server.last_request.body == {'jql': 'PROJECT = GOJI', 'maxResults': 1}
+
+    assert len(results.issues) == 1
+    assert results.issues[0].key == 'GOJI-1'
+    assert results.max_results == 1
 
 
 def test_search_all_single_page(client: JIRAClient, server: JIRAServer):
@@ -103,3 +134,19 @@ def test_search_all_two_page(client: JIRAClient, server: JIRAServer):
     assert len(server.requests) == 2
     assert server.requests[0].body == {'jql': 'PROJECT = GOJI'}
     assert server.requests[1].body == {'jql': 'PROJECT = GOJI', 'startAt': 1}
+
+
+def test_search_all_empty_page(client: JIRAClient, server: JIRAServer):
+    server.response.body = {
+        'issues': [],
+        'startAt': 0,
+        'maxResults': 50,
+        'total': 0,
+    }
+
+    issues = list(client.search_all('PROJECT = GOJI'))
+    assert len(issues) == 0
+
+    assert server.last_request.method == 'POST'
+    assert server.last_request.path == '/rest/api/2/search'
+    assert server.last_request.body == {'jql': 'PROJECT = GOJI'}

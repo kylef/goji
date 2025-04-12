@@ -181,3 +181,113 @@ def test_comment(client: JIRAClient, server: JIRAServer):
     assert server.last_request.method == 'POST'
     assert server.last_request.path == '/rest/api/2/issue/GOJI-14/comment'
     assert server.last_request.body == {'body': 'Hello World'}
+
+
+def test_comments(client: JIRAClient, server: JIRAServer):
+    server.response.body = {
+        'startAt': 0,
+        'maxResults': 50,
+        'total': 2,
+        'comments': [
+            {
+                'id': '10000',
+                'author': {
+                    'name': 'kyle',
+                    'displayName': 'Kyle',
+                },
+                'body': 'Hello World',
+                'created': '2020-05-08T05:54:42.688+0000',
+            },
+            {
+                'id': '10001',
+                'author': {
+                    'name': 'ash',
+                    'displayName': 'Ash',
+                },
+                'body': 'Second comment',
+                'created': '2023-05-08T06:54:42.688+0000',
+            },
+        ],
+    }
+
+    comments = client.comments('GOJI-14')
+
+    assert len(comments.comments) == 2
+    assert comments.comments[0].body == 'Hello World'
+    assert comments.comments[0].author.name == 'Kyle'
+    assert comments.comments[1].body == 'Second comment'
+    assert comments.comments[1].author.name == 'Ash'
+
+    assert server.last_request.method == 'GET'
+    assert server.last_request.path == '/rest/api/2/issue/GOJI-14/comment'
+
+
+def test_attach(client: JIRAClient, server: JIRAServer, tmp_path):
+    server.response.body = [
+        {
+            'filename': 'test.txt',
+            'author': {'name': 'kyle', 'displayName': 'Kyle'},
+            'size': 123,
+        }
+    ]
+
+    test_file = tmp_path / "test.txt"
+    test_file.write_text("Hello World")
+
+    with open(test_file, 'rb') as fd:
+        attachment = client.attach('GOJI-14', fd)
+
+    assert server.last_request.method == 'POST'
+    assert server.last_request.path == '/rest/api/2/issue/GOJI-14/attachments'
+
+
+def test_get_issue_link_types(client: JIRAClient, server: JIRAServer):
+    server.response.body = {
+        'issueLinkTypes': [
+            {
+                'id': '10000',
+                'name': 'Blocks',
+                'inward': 'is blocked by',
+                'outward': 'blocks',
+            },
+            {
+                'id': '10001',
+                'name': 'Relates',
+                'inward': 'relates to',
+                'outward': 'relates to',
+            },
+        ]
+    }
+
+    link_types = client.get_issue_link_types()
+
+    assert len(link_types) == 2
+    assert link_types[0].name == 'Blocks'
+    assert link_types[0].inward == 'is blocked by'
+    assert link_types[0].outward == 'blocks'
+    assert link_types[1].name == 'Relates'
+    assert link_types[1].inward == 'relates to'
+    assert link_types[1].outward == 'relates to'
+
+    assert server.last_request.method == 'GET'
+    assert server.last_request.path == '/rest/api/2/issueLinkType'
+
+
+def test_link_issue(client: JIRAClient, server: JIRAServer):
+    server.response.body = {}
+
+    client.link_issue('GOJI-14', 'GOJI-15', 'Blocks')
+
+    assert server.last_request.method == 'POST'
+    assert server.last_request.path == '/rest/api/2/issueLink'
+    assert server.last_request.body == {
+        'type': {
+            'name': 'Blocks',
+        },
+        'inwardIssue': {
+            'key': 'GOJI-15',
+        },
+        'outwardIssue': {
+            'key': 'GOJI-14',
+        },
+    }

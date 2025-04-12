@@ -9,13 +9,13 @@ import toml
 from goji.client import JIRAClient
 from goji.models import Issue, UserDetails
 
-HTML_ESCAPE_DICT = {
-    '<': '&lt;',
-    '>': '&gt;',
-    '&': '&amp;',
-    '"': '&quot;',
-    "'": '&#39;',
-}
+HTML_ESCAPE_DICT = [
+    ('&', '&amp;'),
+    ('<', '&lt;'),
+    ('>', '&gt;'),
+    ('"', '&quot;'),
+    ("'", '&#39;'),
+]
 
 
 CSS = '''
@@ -93,8 +93,8 @@ td {
 
 
 def html_escape(text: str) -> str:
-    for escape in HTML_ESCAPE_DICT:
-        text = text.replace(escape, HTML_ESCAPE_DICT[escape])
+    for escape, replacement in HTML_ESCAPE_DICT:
+        text = text.replace(escape, replacement)
 
     return text
 
