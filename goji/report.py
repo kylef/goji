@@ -2,7 +2,7 @@ import importlib
 from collections import Counter
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from urllib.parse import urljoin
+from urllib.parse import quote, urljoin
 
 import toml
 
@@ -288,15 +288,26 @@ class StatisticsWidget(Widget):
         # Rows
         output.write('<tbody>')
         for name, count in counter.most_common(self.results):
+            jql = f'"{self.field}" = "{name}"'
+            if name == 'Unassigned':
+                jql = f'"{self.field}" is empty'
+            if self.query:
+                jql += ' and {self.query}'
+            url = urljoin(self.client.base_url, f'issues') + '?jql=' + quote(jql)
             output.write('<tr>')
-            output.write(f'<td>{html_escape(name)}</td>')
+            output.write(
+                f'<td><a href="{html_escape(url)}">{html_escape(name)}</a></td>'
+            )
             output.write(f'<td>{html_escape(str(count))}</td>')
             output.write('</tr>')
         output.write('</tbody>')
 
         output.write('<tfoot>')
         output.write('<tr>')
-        output.write(f'<td>Total</td>')
+        url = urljoin(self.client.base_url, f'issues')
+        if self.query:
+            url += '?jql=' + quote(self.query)
+        output.write(f'<td><a href="{url}">Total</a></td>')
         output.write(f'<td>{html_escape(str(counter.total()))}</td>')
         output.write('</tr>')
         output.write('</tfoot>')
