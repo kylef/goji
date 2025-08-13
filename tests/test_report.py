@@ -120,6 +120,6 @@ def test_statistics_widget(client: JIRAClient, server: JIRAServer):
         '<th>Count</th>'
         '</tr></thead>'
         '<tbody>'
-        '<tr><td>Delisa</td><td>1</td></tr>'
-        '</tbody><tfoot><tr><td>Total</td><td>1</td></tr></tfoot></table>'
+        f'<tr><td><a href="{server.url}/issues?jql=%22assignee%22%20%3D%20%22Delisa%22">Delisa</a></td><td>1</td></tr>'
+        f'</tbody><tfoot><tr><td><a href="{server.url}/issues">Total</a></td><td>1</td></tr></tfoot></table>'
     )
